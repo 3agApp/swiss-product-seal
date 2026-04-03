@@ -44,11 +44,11 @@ SuppliersCreate.layout = {
     breadcrumbs: [
         {
             title: 'Suppliers',
-            href: index(),
+            href: index.url(),
         },
         {
             title: 'Add Supplier',
-            href: create(),
+            href: create.url(),
         },
     ],
 };

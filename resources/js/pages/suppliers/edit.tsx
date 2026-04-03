@@ -14,8 +14,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { index, update } from '@/routes/suppliers';
 import { store as brandStore, update as brandUpdate, destroy as brandDestroy } from '@/routes/suppliers/brands';
-import { edit, index, update } from '@/routes/suppliers';
 import type { Brand, Supplier, SupplierFormData } from '@/types';
 
 type Props = {
@@ -30,7 +30,9 @@ export default function SuppliersEdit({ supplier }: Props) {
     const brands = supplier.brands ?? [];
 
     function handleDeleteBrand() {
-        if (!deleteId) return;
+        if (!deleteId) {
+            return;
+        }
 
         setDeleting(true);
         router.delete(brandDestroy.url({ supplier: supplier.id, brand: deleteId }), {
@@ -203,11 +205,11 @@ SuppliersEdit.layout = {
     breadcrumbs: [
         {
             title: 'Suppliers',
-            href: index(),
+            href: index.url(),
         },
         {
             title: 'Edit Supplier',
-            href: edit(0),
+            href: '#',
         },
     ],
 };

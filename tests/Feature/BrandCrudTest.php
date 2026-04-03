@@ -83,3 +83,42 @@ it('loads brands on supplier edit page', function () {
             ->has('supplier.brands', 3)
         );
 });
+
+it('rejects duplicate brand name for the same supplier', function () {
+    Brand::factory()->for($this->supplier)->create(['name' => 'Existing Brand']);
+
+    $this->post(route('suppliers.brands.store', $this->supplier), [
+        'name' => 'Existing Brand',
+    ])->assertSessionHasErrors(['name']);
+});
+
+it('allows same brand name for different suppliers', function () {
+    $otherSupplier = Supplier::factory()->create();
+    Brand::factory()->for($otherSupplier)->create(['name' => 'Shared Name']);
+
+    $this->post(route('suppliers.brands.store', $this->supplier), [
+        'name' => 'Shared Name',
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('brands', [
+        'supplier_id' => $this->supplier->id,
+        'name' => 'Shared Name',
+    ]);
+});
+
+it('allows updating brand to keep its own name', function () {
+    $brand = Brand::factory()->for($this->supplier)->create(['name' => 'My Brand']);
+
+    $this->put(route('suppliers.brands.update', [$this->supplier, $brand]), [
+        'name' => 'My Brand',
+    ])->assertRedirect();
+});
+
+it('rejects updating brand to an existing name for the same supplier', function () {
+    Brand::factory()->for($this->supplier)->create(['name' => 'Taken Name']);
+    $brand = Brand::factory()->for($this->supplier)->create(['name' => 'Other Brand']);
+
+    $this->put(route('suppliers.brands.update', [$this->supplier, $brand]), [
+        'name' => 'Taken Name',
+    ])->assertSessionHasErrors(['name']);
+});

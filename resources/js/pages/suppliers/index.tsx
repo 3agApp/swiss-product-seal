@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -36,43 +36,38 @@ type Props = {
 export default function SuppliersIndex({ suppliers, filters }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
-    const [search, setSearch] = useState(filters.search ?? '');
+    const [localSearch, setLocalSearch] = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+    const search = localSearch ?? filters.search ?? '';
 
     const applyFilters = useCallback(
         (params: Record<string, string | undefined>) => {
             router.get(index.url(), params, {
                 preserveState: true,
                 preserveScroll: true,
+                onSuccess: () => setLocalSearch(null),
             });
         },
         [],
     );
 
-    useEffect(() => {
-        setSearch(filters.search ?? '');
-    }, [filters.search]);
+    function handleSearchChange(value: string) {
+        setLocalSearch(value);
 
-    useEffect(() => {
-        if (search === (filters.search ?? '')) {
-            return;
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
         }
-
-        if (debounceRef.current) clearTimeout(debounceRef.current);
 
         debounceRef.current = setTimeout(() => {
             applyFilters({
-                search: search || undefined,
+                search: value || undefined,
                 sort: filters.sort || undefined,
                 direction: filters.sort ? filters.direction : undefined,
                 page: undefined,
             });
         }, 300);
-
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, [applyFilters, filters.direction, filters.search, filters.sort, search]);
+    }
 
     function handleSort(column: string) {
         let newSort: string | undefined;
@@ -98,8 +93,8 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
 
     function sortIcon(column: string) {
         if (filters.sort !== column) {
-return <ArrowUpDown className="size-3.5 opacity-40" />;
-}
+            return <ArrowUpDown className="size-3.5 opacity-40" />;
+        }
 
         return filters.direction === 'asc' ? (
             <ArrowUp className="size-3.5" />
@@ -110,8 +105,8 @@ return <ArrowUpDown className="size-3.5 opacity-40" />;
 
     function handleDelete() {
         if (!deleteId) {
-return;
-}
+            return;
+        }
 
         setDeleting(true);
         router.delete(destroy.url(deleteId), {
@@ -145,13 +140,13 @@ return;
                     <Input
                         placeholder="Search suppliers..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-9 pr-9"
                     />
                     {search && (
                         <button
                             type="button"
-                            onClick={() => setSearch('')}
+                            onClick={() => handleSearchChange('')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         >
                             <X className="size-4" />
@@ -287,7 +282,7 @@ SuppliersIndex.layout = {
     breadcrumbs: [
         {
             title: 'Suppliers',
-            href: index(),
+            href: index.url(),
         },
     ],
 };
