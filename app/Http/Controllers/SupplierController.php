@@ -16,10 +16,31 @@ class SupplierController extends Controller
      */
     public function index(): Response
     {
+        $request = request();
+        $search = $request->input('search', '');
+
+        $allowedSorts = ['supplier_code', 'name', 'country', 'email', 'active'];
+        $sort = in_array($request->input('sort'), $allowedSorts) ? $request->input('sort') : null;
+        $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+
+        $suppliers = Supplier::query()
+            ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
+                $q->where('supplier_code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
+            }))
+            ->when($sort, fn ($query) => $query->orderBy($sort, $direction), fn ($query) => $query->orderBy('id', 'desc'))
+            ->paginate(15)
+            ->withQueryString();
+
         return Inertia::render('suppliers/index', [
-            'suppliers' => Supplier::query()
-                ->orderBy('id', 'desc')
-                ->paginate(15),
+            'suppliers' => $suppliers,
+            'filters' => [
+                'search' => $search,
+                'sort' => $sort ?? '',
+                'direction' => $sort ? $direction : '',
+            ],
         ]);
     }
 

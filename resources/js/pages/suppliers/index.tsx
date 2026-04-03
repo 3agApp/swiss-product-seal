@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import {
     DialogFooter,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
     create,
     destroy,
@@ -22,13 +23,76 @@ import {
 } from '@/routes/suppliers';
 import type { PaginatedData, Supplier } from '@/types';
 
-type Props = {
-    suppliers: PaginatedData<Supplier>;
+type Filters = {
+    search: string;
+    sort: string;
+    direction: 'asc' | 'desc';
 };
 
-export default function SuppliersIndex({ suppliers }: Props) {
+type Props = {
+    suppliers: PaginatedData<Supplier>;
+    filters: Filters;
+};
+
+export default function SuppliersIndex({ suppliers, filters }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [search, setSearch] = useState(filters.search ?? '');
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+    const applyFilters = useCallback(
+        (params: Record<string, string | undefined>) => {
+            router.get(index.url(), params, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        },
+        [],
+    );
+
+    useEffect(() => {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            applyFilters({
+                search: search || undefined,
+                sort: filters.sort || undefined,
+                direction: filters.sort ? filters.direction : undefined,
+            });
+        }, 300);
+
+        return () => clearTimeout(debounceRef.current);
+    }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    function handleSort(column: string) {
+        let newSort: string | undefined;
+        let newDirection: string | undefined;
+
+        if (filters.sort === column && filters.direction === 'asc') {
+            newSort = column;
+            newDirection = 'desc';
+        } else if (filters.sort === column && filters.direction === 'desc') {
+            newSort = undefined;
+            newDirection = undefined;
+        } else {
+            newSort = column;
+            newDirection = 'asc';
+        }
+
+        applyFilters({
+            search: search || undefined,
+            sort: newSort,
+            direction: newDirection,
+        });
+    }
+
+    function sortIcon(column: string) {
+        if (filters.sort !== column) return <ArrowUpDown className="size-3.5 opacity-40" />;
+        return filters.direction === 'asc' ? (
+            <ArrowUp className="size-3.5" />
+        ) : (
+            <ArrowDown className="size-3.5" />
+        );
+    }
 
     function handleDelete() {
         if (!deleteId) return;
@@ -60,15 +124,50 @@ export default function SuppliersIndex({ suppliers }: Props) {
                     </Button>
                 </div>
 
+                <div className="relative max-w-sm">
+                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        placeholder="Search suppliers..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 pr-9"
+                    />
+                    {search && (
+                        <button
+                            type="button"
+                            onClick={() => setSearch('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="size-4" />
+                        </button>
+                    )}
+                </div>
+
                 <div className="rounded-xl border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b bg-muted/50 text-left">
-                                    <th className="whitespace-nowrap px-4 py-3 font-medium">Code</th>
-                                    <th className="whitespace-nowrap px-4 py-3 font-medium">Name</th>
-                                    <th className="whitespace-nowrap px-4 py-3 font-medium">Country</th>
-                                    <th className="whitespace-nowrap px-4 py-3 font-medium">Email</th>
+                                    <th className="whitespace-nowrap px-4 py-3 font-medium">
+                                        <button type="button" onClick={() => handleSort('supplier_code')} className="inline-flex items-center gap-1">
+                                            Code {sortIcon('supplier_code')}
+                                        </button>
+                                    </th>
+                                    <th className="whitespace-nowrap px-4 py-3 font-medium">
+                                        <button type="button" onClick={() => handleSort('name')} className="inline-flex items-center gap-1">
+                                            Name {sortIcon('name')}
+                                        </button>
+                                    </th>
+                                    <th className="whitespace-nowrap px-4 py-3 font-medium">
+                                        <button type="button" onClick={() => handleSort('country')} className="inline-flex items-center gap-1">
+                                            Country {sortIcon('country')}
+                                        </button>
+                                    </th>
+                                    <th className="whitespace-nowrap px-4 py-3 font-medium">
+                                        <button type="button" onClick={() => handleSort('email')} className="inline-flex items-center gap-1">
+                                            Email {sortIcon('email')}
+                                        </button>
+                                    </th>
                                     <th className="whitespace-nowrap px-4 py-3 font-medium">Phone</th>
                                     <th className="whitespace-nowrap px-4 py-3 font-medium">Status</th>
                                     <th className="whitespace-nowrap px-4 py-3 text-right font-medium">Actions</th>

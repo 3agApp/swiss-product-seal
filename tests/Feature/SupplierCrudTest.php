@@ -108,3 +108,40 @@ it('deletes a supplier', function () {
 
     $this->assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
 });
+
+it('filters suppliers by search term', function () {
+    Supplier::factory()->create(['name' => 'Acme Corp']);
+    Supplier::factory()->create(['name' => 'Other Company']);
+
+    $this->get(route('suppliers.index', ['search' => 'Acme']))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('suppliers/index')
+            ->has('suppliers.data', 1)
+            ->where('suppliers.data.0.name', 'Acme Corp')
+        );
+});
+
+it('sorts suppliers by column', function () {
+    Supplier::factory()->create(['name' => 'Zebra']);
+    Supplier::factory()->create(['name' => 'Alpha']);
+
+    $this->get(route('suppliers.index', ['sort' => 'name', 'direction' => 'asc']))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('suppliers/index')
+            ->where('suppliers.data.0.name', 'Alpha')
+            ->where('suppliers.data.1.name', 'Zebra')
+        );
+});
+
+it('ignores invalid sort columns', function () {
+    Supplier::factory()->count(2)->create();
+
+    $this->get(route('suppliers.index', ['sort' => 'DROP TABLE suppliers']))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('suppliers/index')
+            ->where('filters.sort', '')
+        );
+});
