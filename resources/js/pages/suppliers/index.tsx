@@ -38,7 +38,7 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [search, setSearch] = useState(filters.search ?? '');
-    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
     const applyFilters = useCallback(
         (params: Record<string, string | undefined>) => {
@@ -51,7 +51,7 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
     );
 
     useEffect(() => {
-        clearTimeout(debounceRef.current);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             applyFilters({
                 search: search || undefined,
@@ -60,7 +60,9 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
             });
         }, 300);
 
-        return () => clearTimeout(debounceRef.current);
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
     }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
     function handleSort(column: string) {
@@ -86,7 +88,10 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
     }
 
     function sortIcon(column: string) {
-        if (filters.sort !== column) return <ArrowUpDown className="size-3.5 opacity-40" />;
+        if (filters.sort !== column) {
+return <ArrowUpDown className="size-3.5 opacity-40" />;
+}
+
         return filters.direction === 'asc' ? (
             <ArrowUp className="size-3.5" />
         ) : (
@@ -95,7 +100,9 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
     }
 
     function handleDelete() {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
 
         setDeleting(true);
         router.delete(destroy.url(deleteId), {
