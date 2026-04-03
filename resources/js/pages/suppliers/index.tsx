@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
+import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -148,40 +149,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                         </table>
                     </div>
 
-                    {suppliers.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t px-4 py-3">
-                            <p className="text-sm text-muted-foreground">
-                                Showing {suppliers.from} to {suppliers.to} of{' '}
-                                {suppliers.total} suppliers
-                            </p>
-                            <div className="flex gap-1">
-                                {suppliers.links.map((link, i) => (
-                                    <Button
-                                        key={i}
-                                        variant={link.active ? 'default' : 'outline'}
-                                        size="sm"
-                                        disabled={!link.url}
-                                        asChild={!!link.url}
-                                    >
-                                        {link.url ? (
-                                            <Link
-                                                href={link.url}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: link.label,
-                                                }}
-                                            />
-                                        ) : (
-                                            <span
-                                                dangerouslySetInnerHTML={{
-                                                    __html: link.label,
-                                                }}
-                                            />
-                                        )}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <Pagination paginator={suppliers} itemName="suppliers" />
                 </div>
             </div>
 
