@@ -51,19 +51,29 @@ export default function SuppliersIndex({ suppliers, filters }: Props) {
     );
 
     useEffect(() => {
+        setSearch(filters.search ?? '');
+    }, [filters.search]);
+
+    useEffect(() => {
+        if (search === (filters.search ?? '')) {
+            return;
+        }
+
         if (debounceRef.current) clearTimeout(debounceRef.current);
+
         debounceRef.current = setTimeout(() => {
             applyFilters({
                 search: search || undefined,
                 sort: filters.sort || undefined,
                 direction: filters.sort ? filters.direction : undefined,
+                page: undefined,
             });
         }, 300);
 
         return () => {
             if (debounceRef.current) clearTimeout(debounceRef.current);
         };
-    }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [applyFilters, filters.direction, filters.search, filters.sort, search]);
 
     function handleSort(column: string) {
         let newSort: string | undefined;

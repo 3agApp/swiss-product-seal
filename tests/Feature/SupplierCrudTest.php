@@ -2,6 +2,7 @@
 
 use App\Models\Supplier;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -144,4 +145,40 @@ it('ignores invalid sort columns', function () {
             ->component('suppliers/index')
             ->where('filters.sort', '')
         );
+});
+
+it('preserves active filters in supplier pagination links', function () {
+    Supplier::factory()
+        ->count(20)
+        ->sequence(fn (Sequence $sequence) => [
+            'name' => "Acme Supplier {$sequence->index}",
+        ])
+        ->create();
+
+    $response = $this->get(route('suppliers.index', [
+        'search' => 'Acme',
+        'sort' => 'name',
+        'direction' => 'asc',
+        'page' => 2,
+    ]));
+
+    $response
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('suppliers/index')
+            ->where('suppliers.current_page', 2)
+            ->where('filters.search', 'Acme')
+            ->where('filters.sort', 'name')
+            ->where('filters.direction', 'asc')
+        );
+
+    collect($response->inertiaProps('suppliers.links'))
+        ->pluck('url')
+        ->filter()
+        ->each(function (string $url) {
+            expect($url)
+                ->toContain('search=Acme')
+                ->toContain('sort=name')
+                ->toContain('direction=asc');
+        });
 });
