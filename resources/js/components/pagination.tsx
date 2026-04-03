@@ -7,7 +7,10 @@ type Props<T> = {
     itemName?: string;
 };
 
-export default function Pagination<T>({ paginator, itemName = 'items' }: Props<T>) {
+export default function Pagination<T>({
+    paginator,
+    itemName = 'items',
+}: Props<T>) {
     if (paginator.last_page <= 1) {
         return null;
     }
@@ -15,8 +18,8 @@ export default function Pagination<T>({ paginator, itemName = 'items' }: Props<T
     return (
         <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-sm text-muted-foreground">
-                Showing {paginator.from} to {paginator.to} of{' '}
-                {paginator.total} {itemName}
+                Showing {paginator.from} to {paginator.to} of {paginator.total}{' '}
+                {itemName}
             </p>
             <div className="flex gap-1">
                 {paginator.links.map((link, i) => (

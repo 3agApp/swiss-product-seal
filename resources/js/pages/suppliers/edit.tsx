@@ -15,7 +15,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { index, update } from '@/routes/suppliers';
-import { store as brandStore, update as brandUpdate, destroy as brandDestroy } from '@/routes/suppliers/brands';
+import {
+    store as brandStore,
+    update as brandUpdate,
+    destroy as brandDestroy,
+} from '@/routes/suppliers/brands';
 import type { Brand, Supplier, SupplierFormData } from '@/types';
 
 type Props = {
@@ -35,13 +39,16 @@ export default function SuppliersEdit({ supplier }: Props) {
         }
 
         setDeleting(true);
-        router.delete(brandDestroy.url({ supplier: supplier.id, brand: deleteId }), {
-            preserveScroll: true,
-            onFinish: () => {
-                setDeleting(false);
-                setDeleteId(null);
+        router.delete(
+            brandDestroy.url({ supplier: supplier.id, brand: deleteId }),
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setDeleting(false);
+                    setDeleteId(null);
+                },
             },
-        });
+        );
     }
 
     return (
@@ -62,7 +69,9 @@ export default function SuppliersEdit({ supplier }: Props) {
                 <div className="grid gap-6 lg:grid-cols-3">
                     <div className="lg:col-span-2">
                         <div className="rounded-xl border p-6">
-                            <h3 className="mb-4 text-sm font-medium text-muted-foreground">Supplier Details</h3>
+                            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
+                                Supplier Details
+                            </h3>
                             <Form<SupplierFormData>
                                 {...update.form(supplier.id)}
                                 className="space-y-6"
@@ -82,7 +91,9 @@ export default function SuppliersEdit({ supplier }: Props) {
                     <div>
                         <div className="rounded-xl border">
                             <div className="flex items-center justify-between border-b px-4 py-3">
-                                <h3 className="text-sm font-medium text-muted-foreground">Brands</h3>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Brands
+                                </h3>
                             </div>
 
                             <div className="divide-y">
@@ -92,29 +103,61 @@ export default function SuppliersEdit({ supplier }: Props) {
                                     </p>
                                 )}
                                 {brands.map((brand) => (
-                                    <div key={brand.id} className="flex items-center justify-between px-4 py-2.5">
+                                    <div
+                                        key={brand.id}
+                                        className="flex items-center justify-between px-4 py-2.5"
+                                    >
                                         {editingBrand?.id === brand.id ? (
                                             <Form
-                                                {...brandUpdate.form({ supplier: supplier.id, brand: brand.id })}
+                                                {...brandUpdate.form({
+                                                    supplier: supplier.id,
+                                                    brand: brand.id,
+                                                })}
                                                 className="flex flex-1 items-center gap-2"
-                                                options={{ preserveScroll: true }}
-                                                onSuccess={() => setEditingBrand(null)}
+                                                options={{
+                                                    preserveScroll: true,
+                                                }}
+                                                onSuccess={() =>
+                                                    setEditingBrand(null)
+                                                }
                                             >
                                                 {({ processing, errors }) => (
                                                     <>
                                                         <div className="flex-1">
                                                             <Input
                                                                 name="name"
-                                                                defaultValue={brand.name}
+                                                                defaultValue={
+                                                                    brand.name
+                                                                }
                                                                 autoFocus
                                                                 className="h-8 text-sm"
                                                             />
-                                                            <InputError message={errors.name} />
+                                                            <InputError
+                                                                message={
+                                                                    errors.name
+                                                                }
+                                                            />
                                                         </div>
-                                                        <Button type="submit" size="sm" variant="ghost" disabled={processing}>
+                                                        <Button
+                                                            type="submit"
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                        >
                                                             Save
                                                         </Button>
-                                                        <Button type="button" size="sm" variant="ghost" onClick={() => setEditingBrand(null)}>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() =>
+                                                                setEditingBrand(
+                                                                    null,
+                                                                )
+                                                            }
+                                                        >
                                                             <X className="size-3.5" />
                                                         </Button>
                                                     </>
@@ -122,13 +165,19 @@ export default function SuppliersEdit({ supplier }: Props) {
                                             </Form>
                                         ) : (
                                             <>
-                                                <span className="text-sm">{brand.name}</span>
+                                                <span className="text-sm">
+                                                    {brand.name}
+                                                </span>
                                                 <div className="flex items-center gap-0.5">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
                                                         className="size-7"
-                                                        onClick={() => setEditingBrand(brand)}
+                                                        onClick={() =>
+                                                            setEditingBrand(
+                                                                brand,
+                                                            )
+                                                        }
                                                     >
                                                         <Pencil className="size-3.5" />
                                                     </Button>
@@ -136,7 +185,11 @@ export default function SuppliersEdit({ supplier }: Props) {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="size-7"
-                                                        onClick={() => setDeleteId(brand.id)}
+                                                        onClick={() =>
+                                                            setDeleteId(
+                                                                brand.id,
+                                                            )
+                                                        }
                                                     >
                                                         <Trash2 className="size-3.5 text-destructive" />
                                                     </Button>
@@ -162,9 +215,15 @@ export default function SuppliersEdit({ supplier }: Props) {
                                                     placeholder="New brand name"
                                                     className="h-8 text-sm"
                                                 />
-                                                <InputError message={errors.name} />
+                                                <InputError
+                                                    message={errors.name}
+                                                />
                                             </div>
-                                            <Button type="submit" size="sm" disabled={processing}>
+                                            <Button
+                                                type="submit"
+                                                size="sm"
+                                                disabled={processing}
+                                            >
                                                 <Plus className="size-3.5" />
                                                 Add
                                             </Button>
@@ -177,11 +236,15 @@ export default function SuppliersEdit({ supplier }: Props) {
                 </div>
             </div>
 
-            <Dialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+            <Dialog
+                open={deleteId !== null}
+                onOpenChange={() => setDeleteId(null)}
+            >
                 <DialogContent>
                     <DialogTitle>Delete Brand</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete this brand? This action cannot be undone.
+                        Are you sure you want to delete this brand? This action
+                        cannot be undone.
                     </DialogDescription>
                     <DialogFooter>
                         <DialogClose asChild>

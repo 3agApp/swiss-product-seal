@@ -13,7 +13,12 @@ type Props = {
     submitLabel: string;
 };
 
-export default function SupplierFormFields({ errors, processing, supplier, submitLabel }: Props) {
+export default function SupplierFormFields({
+    errors,
+    processing,
+    supplier,
+    submitLabel,
+}: Props) {
     return (
         <>
             <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2 sm:items-start">
