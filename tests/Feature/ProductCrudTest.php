@@ -62,6 +62,19 @@ it('validates required fields on store', function () {
         ->assertSessionHasErrors(['name']);
 });
 
+it('stores a product without supplier and brand', function () {
+    $this->post(route('products.store'), [
+        'name' => 'Standalone Product',
+        'supplier_id' => '',
+        'brand_id' => '',
+        'status' => ProductStatus::Open->value,
+    ])->assertRedirect(route('products.index'));
+
+    expect(Product::where('name', 'Standalone Product')->first())
+        ->supplier_id->toBeNull()
+        ->brand_id->toBeNull();
+});
+
 it('validates supplier exists on store', function () {
     $this->post(route('products.store'), [
         'name' => 'Test Product',

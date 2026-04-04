@@ -41,7 +41,7 @@ export default function ProductFormFields({
 
     const filteredBrands = useMemo(
         () =>
-            supplierId
+            supplierId && supplierId !== '__none__'
                 ? brands.filter(
                       (b) => b.supplier_id === Number(supplierId),
                   )
@@ -50,7 +50,7 @@ export default function ProductFormFields({
     );
 
     function handleSupplierChange(value: string) {
-        setSupplierId(value);
+        setSupplierId(value === '__none__' ? '' : value);
         setBrandId('');
     }
 
@@ -120,15 +120,20 @@ export default function ProductFormFields({
 
                 <div className="grid gap-2">
                     <Label htmlFor="supplier_id">Supplier</Label>
-                    <Select
+                    <input
+                        type="hidden"
                         name="supplier_id"
-                        value={supplierId}
+                        value={supplierId === '__none__' ? '' : supplierId}
+                    />
+                    <Select
+                        value={supplierId || '__none__'}
                         onValueChange={handleSupplierChange}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a supplier" />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
                             {suppliers.map((supplier) => (
                                 <SelectItem
                                     key={supplier.id}
@@ -144,16 +149,20 @@ export default function ProductFormFields({
 
                 <div className="grid gap-2">
                     <Label htmlFor="brand_id">Brand</Label>
-                    <Select
+                    <input
+                        type="hidden"
                         name="brand_id"
-                        value={brandId}
+                        value={brandId === '__none__' ? '' : brandId}
+                    />
+                    <Select
+                        value={brandId || '__none__'}
                         onValueChange={setBrandId}
-                        disabled={!supplierId}
+                        disabled={!supplierId || supplierId === '__none__'}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
-                                    supplierId
+                                    supplierId && supplierId !== '__none__'
                                         ? filteredBrands.length === 0
                                             ? 'No brands for this supplier'
                                             : 'Select a brand'
@@ -162,6 +171,7 @@ export default function ProductFormFields({
                             />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
                             {filteredBrands.map((brand) => (
                                 <SelectItem
                                     key={brand.id}
