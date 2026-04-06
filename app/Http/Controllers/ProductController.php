@@ -27,7 +27,7 @@ class ProductController extends Controller
         $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $products = Product::query()
-            ->with(['supplier:id,name', 'brand:id,name'])
+            ->with(['supplier:id,name', 'brand:id,name', 'media'])
             ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('internal_article_number', 'like', "%{$search}%")
@@ -38,6 +38,11 @@ class ProductController extends Controller
             ->when($sort, fn ($query) => $query->orderBy($sort, $direction), fn ($query) => $query->orderBy('id', 'desc'))
             ->paginate(15)
             ->withQueryString();
+
+        $products->through(fn (Product $product) => array_merge($product->toArray(), [
+            'image_url' => $product->getFirstMediaUrl('image') ?: null,
+            'image_preview_url' => $product->getFirstMediaUrl('image', 'preview') ?: null,
+        ]));
 
         return Inertia::render('products/index', [
             'products' => $products,
@@ -66,7 +71,11 @@ class ProductController extends Controller
      */
     public function store(ProductStoreRequest $request): RedirectResponse
     {
-        Product::create($request->validated());
+        $product = Product::create($request->safe()->except('image'));
+
+        if ($request->hasFile('image')) {
+            $product->addMediaFromRequest('image')->toMediaCollection('image');
+        }
 
         Inertia::flash('toast', [
             'type' => 'success',
@@ -81,8 +90,13 @@ class ProductController extends Controller
      */
     public function edit(Product $product): Response
     {
+        $product->load(['supplier:id,name', 'brand:id,name,supplier_id', 'media']);
+
         return Inertia::render('products/edit', [
-            'product' => $product->load(['supplier:id,name', 'brand:id,name,supplier_id']),
+            'product' => array_merge($product->toArray(), [
+                'image_url' => $product->getFirstMediaUrl('image') ?: null,
+                'image_preview_url' => $product->getFirstMediaUrl('image', 'preview') ?: null,
+            ]),
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
             'statuses' => ProductStatus::options(),
@@ -94,7 +108,13 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product): RedirectResponse
     {
-        $product->update($request->validated());
+        $product->update($request->safe()->except(['image', 'remove_image']));
+
+        if ($request->hasFile('image')) {
+            $product->addMediaFromRequest('image')->toMediaCollection('image');
+        } elseif ($request->boolean('remove_image')) {
+            $product->clearMediaCollection('image');
+        }
 
         Inertia::flash('toast', [
             'type' => 'success',

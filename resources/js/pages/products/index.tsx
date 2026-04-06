@@ -186,6 +186,9 @@ export default function ProductsIndex({ products, filters }: Props) {
                             <thead>
                                 <tr className="border-b bg-muted/50 text-left">
                                     <th className="px-4 py-3 font-medium whitespace-nowrap">
+                                        Image
+                                    </th>
+                                    <th className="px-4 py-3 font-medium whitespace-nowrap">
                                         <button
                                             type="button"
                                             onClick={() => handleSort('name')}
@@ -245,7 +248,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                                 {products.data.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={7}
+                                            colSpan={8}
                                             className="px-4 py-8 text-center text-muted-foreground"
                                         >
                                             No products found.
@@ -257,6 +260,19 @@ export default function ProductsIndex({ products, filters }: Props) {
                                         key={product.id}
                                         className="border-b transition-colors last:border-0 hover:bg-muted/30"
                                     >
+                                        <td className="px-4 py-3 whitespace-nowrap">
+                                            {product.image_preview_url ? (
+                                                <img
+                                                    src={product.image_preview_url}
+                                                    alt={product.name}
+                                                    className="size-10 rounded-md border object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex size-10 items-center justify-center rounded-md border bg-muted text-xs text-muted-foreground">
+                                                    —
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3 font-medium whitespace-nowrap">
                                             {product.name}
                                         </td>

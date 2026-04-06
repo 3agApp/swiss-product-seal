@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,11 @@ export default function ProductFormFields({
     const [brandId, setBrandId] = useState<string>(
         product?.brand_id?.toString() ?? '',
     );
+    const [imagePreview, setImagePreview] = useState<string | null>(
+        product?.image_url ?? null,
+    );
+    const [removeImage, setRemoveImage] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const filteredBrands = useMemo(
         () =>
@@ -214,6 +219,52 @@ export default function ProductFormFields({
                         placeholder="e.g. KON-0001"
                     />
                     <InputError message={errors.kontor_id} />
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                    <Label htmlFor="image">Product Image</Label>
+                    <div className="flex items-start gap-4">
+                        {imagePreview && (
+                            <img
+                                src={imagePreview}
+                                alt="Product preview"
+                                className="size-20 rounded-md border object-cover"
+                            />
+                        )}
+                        <div className="flex flex-1 flex-col gap-2">
+                            <input type="hidden" name="remove_image" value={removeImage ? '1' : '0'} />
+                            <Input
+                                ref={fileInputRef}
+                                id="image"
+                                name="image"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        setImagePreview(URL.createObjectURL(file));
+                                        setRemoveImage(false);
+                                    }
+                                }}
+                            />
+                            {imagePreview && (
+                                <button
+                                    type="button"
+                                    className="self-start text-sm text-destructive hover:underline"
+                                    onClick={() => {
+                                        setImagePreview(null);
+                                        setRemoveImage(true);
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = '';
+                                        }
+                                    }}
+                                >
+                                    Remove image
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <InputError message={errors.image} />
                 </div>
             </div>
 
