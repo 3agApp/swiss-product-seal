@@ -13,6 +13,8 @@ export type Product = {
     public_uuid: string;
     created_at: string;
     updated_at: string;
+    image_url: string | null;
+    image_preview_url: string | null;
     supplier?: { id: number; name: string } | null;
     brand?: { id: number; name: string } | null;
 };
@@ -27,4 +29,5 @@ export type ProductFormData = {
     brand_id: string;
     status: string;
     kontor_id: string;
+    image: File | string;
 };

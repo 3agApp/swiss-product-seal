@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[Fillable(['name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'status', 'kontor_id', 'source_last_sync_at'])]
 class Product extends Model implements HasMedia
@@ -42,6 +43,15 @@ class Product extends Model implements HasMedia
         $this->addMediaCollection('image')
             ->useDisk('public')
             ->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('preview')
+            ->width(200)
+            ->height(200)
+            ->sharpen(10)
+            ->nonQueued();
     }
 
     /**

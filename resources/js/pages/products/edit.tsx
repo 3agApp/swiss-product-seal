@@ -41,6 +41,7 @@ export default function ProductsEdit({
                     <Form<ProductFormData>
                         {...update.form(product.id)}
                         className="space-y-6"
+                        encType="multipart/form-data"
                     >
                         {({ processing, errors }) => (
                             <ProductFormFields
