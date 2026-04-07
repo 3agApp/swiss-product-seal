@@ -37,7 +37,10 @@ type Props = {
     filters: Filters;
 };
 
-const statusVariant: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+const statusVariant: Record<
+    string,
+    'default' | 'secondary' | 'outline' | 'destructive'
+> = {
     open: 'outline',
     in_progress: 'secondary',
     submitted: 'secondary',
@@ -231,9 +234,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                                     <th className="px-4 py-3 font-medium whitespace-nowrap">
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                handleSort('status')
-                                            }
+                                            onClick={() => handleSort('status')}
                                             className="inline-flex items-center gap-1"
                                         >
                                             Status {sortIcon('status')}
@@ -263,7 +264,9 @@ export default function ProductsIndex({ products, filters }: Props) {
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {product.image_preview_url ? (
                                                 <img
-                                                    src={product.image_preview_url}
+                                                    src={
+                                                        product.image_preview_url
+                                                    }
                                                     alt={product.name}
                                                     className="size-10 rounded-md border object-cover"
                                                 />

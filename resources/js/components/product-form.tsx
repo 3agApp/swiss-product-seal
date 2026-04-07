@@ -47,9 +47,7 @@ export default function ProductFormFields({
     const filteredBrands = useMemo(
         () =>
             supplierId && supplierId !== '__none__'
-                ? brands.filter(
-                      (b) => b.supplier_id === Number(supplierId),
-                  )
+                ? brands.filter((b) => b.supplier_id === Number(supplierId))
                 : [],
         [brands, supplierId],
     );
@@ -232,7 +230,11 @@ export default function ProductFormFields({
                             />
                         )}
                         <div className="flex flex-1 flex-col gap-2">
-                            <input type="hidden" name="remove_image" value={removeImage ? '1' : '0'} />
+                            <input
+                                type="hidden"
+                                name="remove_image"
+                                value={removeImage ? '1' : '0'}
+                            />
                             <Input
                                 ref={fileInputRef}
                                 id="image"
@@ -242,7 +244,9 @@ export default function ProductFormFields({
                                 onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
-                                        setImagePreview(URL.createObjectURL(file));
+                                        setImagePreview(
+                                            URL.createObjectURL(file),
+                                        );
                                         setRemoveImage(false);
                                     }
                                 }}
