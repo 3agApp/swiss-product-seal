@@ -1,5 +1,7 @@
 import { Form, Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
+import ProductDocuments from '@/components/product-documents';
 import ProductFormFields from '@/components/product-form';
 import ProductImages from '@/components/product-images';
 import { Button } from '@/components/ui/button';
@@ -12,6 +14,7 @@ type Props = {
     suppliers: { id: number; name: string }[];
     brands: { id: number; name: string; supplier_id: number }[];
     statuses: Record<string, string>;
+    documentTypes: Record<string, string>;
 };
 
 export default function ProductsEdit({
@@ -19,7 +22,10 @@ export default function ProductsEdit({
     suppliers,
     brands,
     statuses,
+    documentTypes,
 }: Props) {
+    const [activeTab, setActiveTab] = useState('images');
+
     return (
         <>
             <Head title={`Edit ${product.name}`} />
@@ -59,7 +65,7 @@ export default function ProductsEdit({
                 </div>
 
                 <div className="rounded-xl border p-6">
-                    <Tabs defaultValue="images">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList>
                             <TabsTrigger value="images">Images</TabsTrigger>
                             <TabsTrigger value="documents">
@@ -73,9 +79,11 @@ export default function ProductsEdit({
                             />
                         </TabsContent>
                         <TabsContent value="documents">
-                            <p className="py-8 text-center text-sm text-muted-foreground">
-                                No documents yet.
-                            </p>
+                            <ProductDocuments
+                                productId={product.id}
+                                documentTypes={documentTypes}
+                                initialDocuments={product.documents ?? []}
+                            />
                         </TabsContent>
                     </Tabs>
                 </div>

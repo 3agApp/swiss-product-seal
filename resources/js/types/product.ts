@@ -6,6 +6,27 @@ export type ProductImage = {
     order: number;
 };
 
+export type ProductDocumentVersion = {
+    id: number;
+    type: string;
+    type_label: string;
+    version: number;
+    expiry_date: string | null;
+    review_comment: string | null;
+    file_name: string | null;
+    file_url: string | null;
+    file_size: number | null;
+    mime_type: string | null;
+    uploaded_at: string | null;
+    updated_at: string | null;
+    replaces_document_id: number | null;
+    is_current: boolean;
+};
+
+export type ProductDocument = ProductDocumentVersion & {
+    history: ProductDocumentVersion[];
+};
+
 export type Product = {
     id: number;
     name: string;
@@ -24,6 +45,7 @@ export type Product = {
     image_url: string | null;
     image_preview_url: string | null;
     images?: ProductImage[];
+    documents?: ProductDocument[];
     supplier?: { id: number; name: string } | null;
     brand?: { id: number; name: string } | null;
 };
