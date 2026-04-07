@@ -34,7 +34,6 @@ class ProductStoreRequest extends FormRequest
             'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
             'status' => ['nullable', 'string', Rule::in(ProductStatus::cases())],
             'kontor_id' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:10240'],
         ];
     }
 }

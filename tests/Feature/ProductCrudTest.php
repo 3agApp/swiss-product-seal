@@ -196,46 +196,11 @@ it('preserves active filters in product pagination links', function () {
         });
 });
 
-it('stores a product with an image', function () {
-    Storage::fake('public');
-
-    $this->post(route('products.store'), [
-        'name' => 'Product With Image',
-        'status' => ProductStatus::Open->value,
-        'image' => UploadedFile::fake()->image('product.jpg', 640, 480),
-    ])->assertRedirect(route('products.index'));
-
-    $product = Product::where('name', 'Product With Image')->first();
-
-    expect($product->getFirstMediaUrl('image'))->not->toBeEmpty();
-});
-
-it('updates a product with a new image', function () {
-    Storage::fake('public');
-
-    $product = Product::factory()->create();
-
-    $this->put(route('products.update', $product), [
-        'name' => $product->name,
-        'status' => ProductStatus::Open->value,
-        'image' => UploadedFile::fake()->image('updated.png', 800, 600),
-    ])->assertRedirect(route('products.index'));
-
-    expect($product->fresh()->getFirstMediaUrl('image'))->not->toBeEmpty();
-});
-
-it('validates image file type on store', function () {
-    $this->post(route('products.store'), [
-        'name' => 'Bad Image Product',
-        'image' => UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'),
-    ])->assertSessionHasErrors(['image']);
-});
-
 it('includes image_url in products index data', function () {
     Storage::fake('public');
 
     $product = Product::factory()->create();
-    $product->addMedia(UploadedFile::fake()->image('test.jpg'))->toMediaCollection('image');
+    $product->addMedia(UploadedFile::fake()->image('test.jpg'))->toMediaCollection('images');
 
     $this->get(route('products.index'))
         ->assertSuccessful()
@@ -249,7 +214,7 @@ it('includes image_url in product edit data', function () {
     Storage::fake('public');
 
     $product = Product::factory()->create();
-    $product->addMedia(UploadedFile::fake()->image('edit-test.jpg'))->toMediaCollection('image');
+    $product->addMedia(UploadedFile::fake()->image('edit-test.jpg'))->toMediaCollection('images');
 
     $this->get(route('products.edit', $product))
         ->assertSuccessful()
@@ -257,20 +222,4 @@ it('includes image_url in product edit data', function () {
             ->component('products/edit')
             ->where('product.image_url', fn ($value) => str_contains($value, 'edit-test'))
         );
-});
-
-it('removes the product image when remove_image is set', function () {
-    Storage::fake('public');
-
-    $product = Product::factory()->create();
-    $product->addMedia(UploadedFile::fake()->image('to-remove.jpg'))->toMediaCollection('image');
-
-    expect($product->getFirstMediaUrl('image'))->not->toBeEmpty();
-
-    $this->put(route('products.update', $product), [
-        'name' => $product->name,
-        'remove_image' => '1',
-    ])->assertRedirect(route('products.index'));
-
-    expect($product->fresh()->getFirstMediaUrl('image'))->toBeEmpty();
 });

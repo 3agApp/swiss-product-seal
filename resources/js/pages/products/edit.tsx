@@ -1,7 +1,9 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import ProductFormFields from '@/components/product-form';
+import ProductImages from '@/components/product-images';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { index, update } from '@/routes/products';
 import type { Product, ProductFormData } from '@/types';
 
@@ -41,7 +43,6 @@ export default function ProductsEdit({
                     <Form<ProductFormData>
                         {...update.form(product.id)}
                         className="space-y-6"
-                        encType="multipart/form-data"
                     >
                         {({ processing, errors }) => (
                             <ProductFormFields
@@ -55,6 +56,28 @@ export default function ProductsEdit({
                             />
                         )}
                     </Form>
+                </div>
+
+                <div className="rounded-xl border p-6">
+                    <Tabs defaultValue="images">
+                        <TabsList>
+                            <TabsTrigger value="images">Images</TabsTrigger>
+                            <TabsTrigger value="documents">
+                                Documents
+                            </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="images">
+                            <ProductImages
+                                productId={product.id}
+                                initialImages={product.images ?? []}
+                            />
+                        </TabsContent>
+                        <TabsContent value="documents">
+                            <p className="py-8 text-center text-sm text-muted-foreground">
+                                No documents yet.
+                            </p>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </>

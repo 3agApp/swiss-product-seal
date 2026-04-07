@@ -1,3 +1,11 @@
+export type ProductImage = {
+    id: number;
+    url: string;
+    preview_url: string;
+    name: string;
+    order: number;
+};
+
 export type Product = {
     id: number;
     name: string;
@@ -15,6 +23,7 @@ export type Product = {
     updated_at: string;
     image_url: string | null;
     image_preview_url: string | null;
+    images?: ProductImage[];
     supplier?: { id: number; name: string } | null;
     brand?: { id: number; name: string } | null;
 };
@@ -29,5 +38,4 @@ export type ProductFormData = {
     brand_id: string;
     status: string;
     kontor_id: string;
-    image: File | string;
 };

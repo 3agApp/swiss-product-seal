@@ -106,7 +106,7 @@ it('nulls nullable foreign keys when the supplier or brand is deleted', function
         ->and($product->fresh()?->brand_id)->toBeNull();
 });
 
-it('stores a product image in a single file media collection', function () {
+it('stores multiple product images in the media collection', function () {
     Storage::fake('public');
 
     $product = Product::create([
@@ -116,12 +116,12 @@ it('stores a product image in a single file media collection', function () {
     $firstImage = UploadedFile::fake()->image('first-image.jpg');
     $secondImage = UploadedFile::fake()->image('second-image.jpg');
 
-    $product->addMedia($firstImage)->toMediaCollection('image');
-    $product->addMedia($secondImage)->toMediaCollection('image');
+    $product->addMedia($firstImage)->toMediaCollection('images');
+    $product->addMedia($secondImage)->toMediaCollection('images');
 
     $product->refresh();
 
-    expect($product->getMedia('image'))->toHaveCount(1)
-        ->and($product->getFirstMedia('image')?->file_name)->toBe('second-image.jpg')
-        ->and($product->getFirstMedia('image')?->disk)->toBe('public');
+    expect($product->getMedia('images'))->toHaveCount(2)
+        ->and($product->getFirstMedia('images')?->file_name)->toBe('first-image.jpg')
+        ->and($product->getFirstMedia('images')?->disk)->toBe('public');
 });

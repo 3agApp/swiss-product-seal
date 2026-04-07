@@ -31,7 +31,6 @@ export default function ProductsCreate({ suppliers, brands, statuses }: Props) {
                     <Form<ProductFormData>
                         {...store.form()}
                         className="space-y-6"
-                        encType="multipart/form-data"
                     >
                         {({ processing, errors }) => (
                             <ProductFormFields
