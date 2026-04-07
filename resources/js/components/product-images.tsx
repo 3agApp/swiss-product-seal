@@ -1,6 +1,21 @@
-import { useCallback, useRef, useState } from 'react';
-import { DragDropProvider } from '@dnd-kit/react';
-import { useSortable } from '@dnd-kit/react/sortable';
+import { useRef, useState } from 'react';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -45,26 +60,34 @@ async function request(
 
 function SortableImage({
     image,
-    index,
-    productId,
     onDelete,
     deletingId,
+    isFirst,
 }: {
     image: ProductImage;
-    index: number;
-    productId: number;
     onDelete: (id: number) => void;
     deletingId: number | null;
+    isFirst: boolean;
 }) {
-    const { ref, handleRef, isDragging } = useSortable({
-        id: image.id,
-        index,
-    });
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: image.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
 
     return (
         <div
-            ref={ref}
-            className={`group relative aspect-square overflow-hidden rounded-lg border bg-muted transition-opacity ${isDragging ? 'opacity-40' : ''}`}
+            ref={setNodeRef}
+            style={style}
+            className={`group relative aspect-square overflow-hidden rounded-lg border bg-muted ${isDragging ? 'z-10 opacity-50 shadow-lg' : ''}`}
         >
             <img
                 src={image.preview_url || image.url}
@@ -72,11 +95,12 @@ function SortableImage({
                 className="size-full object-cover"
                 draggable={false}
             />
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-1.5">
                 <button
                     type="button"
-                    ref={handleRef}
-                    className="cursor-grab rounded bg-black/50 p-1 text-white active:cursor-grabbing"
+                    className="cursor-grab rounded bg-black/50 p-1 text-white opacity-60 transition-opacity hover:opacity-100 active:cursor-grabbing"
+                    {...attributes}
+                    {...listeners}
                 >
                     <GripVertical className="size-3.5" />
                 </button>
@@ -84,7 +108,7 @@ function SortableImage({
                     type="button"
                     disabled={deletingId === image.id}
                     onClick={() => onDelete(image.id)}
-                    className="rounded bg-black/50 p-1 text-white transition-colors hover:bg-destructive"
+                    className="rounded bg-black/50 p-1 text-white opacity-0 transition-opacity hover:bg-destructive group-hover:opacity-100"
                 >
                     {deletingId === image.id ? (
                         <Spinner className="size-3.5" />
@@ -93,7 +117,7 @@ function SortableImage({
                     )}
                 </button>
             </div>
-            {index === 0 && (
+            {isFirst && (
                 <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
                     Cover
                 </span>
@@ -107,6 +131,15 @@ export default function ProductImages({ productId, initialImages }: Props) {
     const [uploading, setUploading] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 5 },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    );
 
     async function handleUpload(files: FileList | null) {
         if (!files || files.length === 0) return;
@@ -156,41 +189,30 @@ export default function ProductImages({ productId, initialImages }: Props) {
         }
     }
 
-    const handleDragEnd = useCallback(
-        async (event: {
-            canceled: boolean;
-            operation: { source: { id: unknown } | null; target: { id: unknown } | null };
-        }) => {
-            if (event.canceled) return;
+    async function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
 
-            const sourceId = Number(event.operation.source?.id);
-            const targetId = Number(event.operation.target?.id);
-            if (!sourceId || !targetId || sourceId === targetId) return;
+        const oldIndex = images.findIndex((img) => img.id === active.id);
+        const newIndex = images.findIndex((img) => img.id === over.id);
+        if (oldIndex === -1 || newIndex === -1) return;
 
-            const oldIndex = images.findIndex((img) => img.id === sourceId);
-            const newIndex = images.findIndex((img) => img.id === targetId);
-            if (oldIndex === -1 || newIndex === -1) return;
+        const reordered = arrayMove(images, oldIndex, newIndex);
+        setImages(reordered);
 
-            const reordered = [...images];
-            const [moved] = reordered.splice(oldIndex, 1);
-            reordered.splice(newIndex, 0, moved);
-            setImages(reordered);
-
-            const ids = reordered.map((img) => img.id);
-            try {
-                await request(
-                    'PUT',
-                    reorder.url(productId),
-                    JSON.stringify({ ids }),
-                    'application/json',
-                );
-            } catch {
-                setImages(images);
-                toast.error('Failed to reorder images.');
-            }
-        },
-        [images, productId],
-    );
+        const ids = reordered.map((img) => img.id);
+        try {
+            await request(
+                'PUT',
+                reorder.url(productId),
+                JSON.stringify({ ids }),
+                'application/json',
+            );
+        } catch {
+            setImages(images);
+            toast.error('Failed to reorder images.');
+        }
+    }
 
     return (
         <div className="space-y-4">
@@ -242,20 +264,28 @@ export default function ProductImages({ productId, initialImages }: Props) {
                     </span>
                 </button>
             ) : (
-                <DragDropProvider onDragEnd={handleDragEnd}>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {images.map((image, index) => (
-                            <SortableImage
-                                key={image.id}
-                                image={image}
-                                index={index}
-                                productId={productId}
-                                onDelete={handleDelete}
-                                deletingId={deletingId}
-                            />
-                        ))}
-                    </div>
-                </DragDropProvider>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={images.map((img) => img.id)}
+                        strategy={rectSortingStrategy}
+                    >
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                            {images.map((image, index) => (
+                                <SortableImage
+                                    key={image.id}
+                                    image={image}
+                                    onDelete={handleDelete}
+                                    deletingId={deletingId}
+                                    isFirst={index === 0}
+                                />
+                            ))}
+                        </div>
+                    </SortableContext>
+                </DndContext>
             )}
         </div>
     );
