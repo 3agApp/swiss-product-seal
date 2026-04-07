@@ -9,6 +9,8 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\Conversions\ConversionCollection;
 
 it('requires a name', function () {
     expect(fn () => Product::create())->toThrow(QueryException::class);
@@ -124,4 +126,22 @@ it('stores multiple product images in the media collection', function () {
     expect($product->getMedia('images'))->toHaveCount(2)
         ->and($product->getFirstMedia('images')?->file_name)->toBe('first-image.jpg')
         ->and($product->getFirstMedia('images')?->disk)->toBe('public');
+});
+
+it('registers a higher resolution preview conversion for product images', function () {
+    $product = Product::create([
+        'name' => 'Preview Product',
+    ]);
+
+    $media = $product->addMedia(UploadedFile::fake()->image('preview-source.jpg'))
+        ->toMediaCollection('images');
+
+    $previewConversion = ConversionCollection::createForMedia($media)->getByName('preview');
+    $previewManipulations = $previewConversion->getManipulations();
+    $imagesCollection = $product->getMediaCollection('images');
+
+    expect($previewManipulations->getManipulationArgument('fit'))->toBe([Fit::Contain, 320, 320])
+        ->and($previewManipulations->getManipulationArgument('sharpen'))->toBe([10])
+        ->and($previewConversion->shouldBeQueued())->toBeFalse()
+        ->and($imagesCollection?->diskName)->toBe('public');
 });
