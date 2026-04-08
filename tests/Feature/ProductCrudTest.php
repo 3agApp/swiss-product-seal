@@ -93,6 +93,23 @@ it('validates supplier exists on store', function () {
     ])->assertSessionHasErrors(['supplier_id']);
 });
 
+it('requires the selected brand to belong to the selected supplier on store', function () {
+    $supplier = Supplier::factory()->create();
+    $otherSupplier = Supplier::factory()->create();
+    $brand = Brand::factory()->for($otherSupplier)->create();
+    $category = Category::factory()->create();
+
+    $this->post(route('products.store'), [
+        'name' => 'Mismatched Product',
+        'supplier_id' => $supplier->id,
+        'brand_id' => $brand->id,
+        'category_id' => $category->id,
+        'status' => ProductStatus::Open->value,
+    ])->assertSessionHasErrors(['brand_id']);
+
+    $this->assertDatabaseMissing('products', ['name' => 'Mismatched Product']);
+});
+
 it('displays the edit product form', function () {
     $product = Product::factory()->create();
 
@@ -122,6 +139,25 @@ it('validates required fields on update', function () {
 
     $this->put(route('products.update', $product), [])
         ->assertSessionHasErrors(['name', 'category_id']);
+});
+
+it('requires the selected brand to belong to the selected supplier on update', function () {
+    $supplier = Supplier::factory()->create();
+    $otherSupplier = Supplier::factory()->create();
+    $brand = Brand::factory()->for($otherSupplier)->create();
+    $product = Product::factory()->create([
+        'supplier_id' => $supplier->id,
+    ]);
+
+    $this->put(route('products.update', $product), [
+        'name' => 'Updated Product Name',
+        'supplier_id' => $supplier->id,
+        'brand_id' => $brand->id,
+        'category_id' => $product->category_id,
+        'status' => ProductStatus::Open->value,
+    ])->assertSessionHasErrors(['brand_id']);
+
+    expect($product->fresh()->brand_id)->not->toBe($brand->id);
 });
 
 it('deletes a product', function () {

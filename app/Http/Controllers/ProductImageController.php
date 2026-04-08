@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProductImageController extends Controller
@@ -58,12 +60,28 @@ class ProductImageController extends Controller
      */
     public function reorder(Request $request, Product $product): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'ids' => ['required', 'array'],
-            'ids.*' => ['integer'],
+            'ids.*' => ['integer', 'distinct'],
         ]);
 
-        Media::setNewOrder($request->input('ids'));
+        $requestedIds = collect($validated['ids'])
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->values();
+
+        $productImageIds = $product->media()
+            ->where('collection_name', 'images')
+            ->pluck('id')
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->values();
+
+        if (! $this->hasExactImageSet($requestedIds, $productImageIds)) {
+            throw ValidationException::withMessages([
+                'ids' => 'The provided image order must include each image for the selected product exactly once.',
+            ]);
+        }
+
+        Media::setNewOrder($requestedIds->all());
 
         return response()->json([
             'images' => $this->formatImages($product),
@@ -82,5 +100,12 @@ class ProductImageController extends Controller
             'name' => $media->file_name,
             'order' => $media->order_column,
         ])->values()->all();
+    }
+
+    private function hasExactImageSet(Collection $requestedIds, Collection $productImageIds): bool
+    {
+        return $requestedIds->count() === $productImageIds->count()
+            && $requestedIds->diff($productImageIds)->isEmpty()
+            && $productImageIds->diff($requestedIds)->isEmpty();
     }
 }

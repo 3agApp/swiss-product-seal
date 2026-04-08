@@ -58,6 +58,18 @@ it('deletes a brand', function () {
     $this->assertDatabaseMissing('brands', ['id' => $brand->id]);
 });
 
+it('returns not found when a brand is accessed through another supplier', function () {
+    $otherSupplier = Supplier::factory()->create();
+    $brand = Brand::factory()->for($otherSupplier)->create();
+
+    $this->put(route('suppliers.brands.update', [$this->supplier, $brand]), [
+        'name' => 'Updated Brand',
+    ])->assertNotFound();
+
+    $this->delete(route('suppliers.brands.destroy', [$this->supplier, $brand]))
+        ->assertNotFound();
+});
+
 it('redirects guests from brand routes', function () {
     auth()->logout();
 

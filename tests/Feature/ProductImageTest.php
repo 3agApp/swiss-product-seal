@@ -106,6 +106,26 @@ it('reorders product images', function () {
     expect($reordered->last()->file_name)->toBe('first.jpg');
 });
 
+it('rejects reorder requests that include images from another product', function () {
+    $product = Product::factory()->create();
+    $otherProduct = Product::factory()->create();
+
+    $product->addMedia(UploadedFile::fake()->image('first.jpg'))->toMediaCollection('images');
+    $product->addMedia(UploadedFile::fake()->image('second.jpg'))->toMediaCollection('images');
+    $otherProduct->addMedia(UploadedFile::fake()->image('foreign.jpg'))->toMediaCollection('images');
+
+    $requestedIds = [
+        $product->getMedia('images')[1]->id,
+        $otherProduct->getFirstMedia('images')->id,
+    ];
+
+    $this->putJson(route('products.images.reorder', $product), [
+        'ids' => $requestedIds,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['ids']);
+});
+
 it('requires authentication for image operations', function () {
     auth()->logout();
     $product = Product::factory()->create();

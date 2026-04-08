@@ -13,7 +13,7 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->scopeBindings()->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::resource('suppliers', SupplierController::class)->except(['show']);
     Route::resource('suppliers.brands', BrandController::class)->only(['store', 'update', 'destroy']);

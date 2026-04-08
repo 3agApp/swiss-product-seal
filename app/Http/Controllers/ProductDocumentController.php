@@ -27,6 +27,7 @@ class ProductDocumentController extends Controller
             if ($duplicateStrategy === 'replace_existing') {
                 $documentToReplace = $product->currentDocuments()
                     ->where('type', $documentType->value)
+                    ->lockForUpdate()
                     ->when(
                         isset($validated['replace_document_id']),
                         fn ($query) => $query->where('id', $validated['replace_document_id']),
@@ -36,23 +37,28 @@ class ProductDocumentController extends Controller
                 $documentToReplace->update(['is_current' => false]);
             }
 
+            $nextVersion = 1;
+
+            if ($documentToReplace !== null) {
+                $nextVersion = ((int) $product->documents()
+                    ->where('version_group_uuid', $documentToReplace->version_group_uuid)
+                    ->lockForUpdate()
+                    ->max('version')) + 1;
+            }
+
             $document = $product->documents()->create([
                 'type' => $documentType,
                 'expiry_date' => $validated['expiry_date'] ?? null,
                 'review_comment' => $validated['review_comment'] ?? null,
                 'version_group_uuid' => $documentToReplace?->version_group_uuid,
                 'replaces_document_id' => $documentToReplace?->id,
-                'version' => $documentToReplace
-                    ? ((int) $product->documents()
-                        ->where('version_group_uuid', $documentToReplace->version_group_uuid)
-                        ->max('version')) + 1
-                    : 1,
+                'version' => $nextVersion,
                 'is_current' => true,
             ]);
 
             $document->addMedia($request->file('file'))
                 ->toMediaCollection('file');
-        });
+        }, attempts: 5);
 
         return response()->json([
             'documents' => $this->formatDocuments($product->fresh()),
