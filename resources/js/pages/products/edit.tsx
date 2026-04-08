@@ -13,6 +13,7 @@ type Props = {
     product: Product;
     suppliers: { id: number; name: string }[];
     brands: { id: number; name: string; supplier_id: number }[];
+    categories: { id: number; name: string }[];
     statuses: Record<string, string>;
     documentTypes: Record<string, string>;
 };
@@ -21,6 +22,7 @@ export default function ProductsEdit({
     product,
     suppliers,
     brands,
+    categories,
     statuses,
     documentTypes,
 }: Props) {
@@ -57,6 +59,7 @@ export default function ProductsEdit({
                                 product={product}
                                 suppliers={suppliers}
                                 brands={brands}
+                                categories={categories}
                                 statuses={statuses}
                                 submitLabel="Update Product"
                             />

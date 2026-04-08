@@ -7,6 +7,7 @@ use App\Enums\ProductStatus;
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Document;
 use App\Models\Product;
 use App\Models\Supplier;
@@ -30,7 +31,7 @@ class ProductController extends Controller
         $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $products = Product::query()
-            ->with(['supplier:id,name', 'brand:id,name', 'media'])
+            ->with(['supplier:id,name', 'brand:id,name', 'category:id,name', 'media'])
             ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('internal_article_number', 'like', "%{$search}%")
@@ -65,6 +66,7 @@ class ProductController extends Controller
         return Inertia::render('products/create', [
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
             'statuses' => ProductStatus::options(),
         ]);
     }
@@ -89,7 +91,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product): Response
     {
-        $product->load(['supplier:id,name', 'brand:id,name,supplier_id', 'media']);
+        $product->load(['supplier:id,name', 'brand:id,name,supplier_id', 'category:id,name', 'media']);
 
         return Inertia::render('products/edit', [
             'product' => array_merge($product->toArray(), [
@@ -106,6 +108,7 @@ class ProductController extends Controller
             ]),
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
             'statuses' => ProductStatus::options(),
             'documentTypes' => DocumentType::options(),
         ]);

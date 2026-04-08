@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductDocumentController;
 use App\Http\Controllers\ProductImageController;
@@ -16,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
     Route::resource('suppliers', SupplierController::class)->except(['show']);
     Route::resource('suppliers.brands', BrandController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('categories', CategoryController::class)->except(['show']);
     Route::resource('products', ProductController::class)->except(['show']);
     Route::post('products/{product}/documents', [ProductDocumentController::class, 'store'])->name('products.documents.store');
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');

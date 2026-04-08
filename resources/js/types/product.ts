@@ -36,6 +36,7 @@ export type Product = {
     ean: string | null;
     supplier_id: number | null;
     brand_id: number | null;
+    category_id: number | null;
     status: string | null;
     kontor_id: string | null;
     source_last_sync_at: string | null;
@@ -48,6 +49,7 @@ export type Product = {
     documents?: ProductDocument[];
     supplier?: { id: number; name: string } | null;
     brand?: { id: number; name: string } | null;
+    category?: { id: number; name: string } | null;
 };
 
 export type ProductFormData = {
@@ -58,6 +60,7 @@ export type ProductFormData = {
     ean: string;
     supplier_id: string;
     brand_id: string;
+    category_id: string;
     status: string;
     kontor_id: string;
 };

@@ -1,27 +1,20 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import ProductFormFields from '@/components/product-form';
+import CategoryFormFields from '@/components/category-form';
 import { Button } from '@/components/ui/button';
-import { create, index, store } from '@/routes/products';
-import type { ProductFormData } from '@/types';
+import { store, index, create } from '@/routes/categories';
+import type { CategoryFormData } from '@/types';
 
-type Props = {
-    suppliers: { id: number; name: string }[];
-    brands: { id: number; name: string; supplier_id: number }[];
-    categories: { id: number; name: string }[];
-    statuses: Record<string, string>;
-};
-
-export default function ProductsCreate({ suppliers, brands, categories, statuses }: Props) {
+export default function CategoriesCreate() {
     return (
         <>
-            <Head title="Add Product" />
+            <Head title="Add Category" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Add Product"
-                        description="Create a new product in the catalog"
+                        title="Add Category"
+                        description="Create a new product category"
                     />
                     <Button variant="outline" asChild>
                         <Link href={index()}>Back to list</Link>
@@ -29,19 +22,15 @@ export default function ProductsCreate({ suppliers, brands, categories, statuses
                 </div>
 
                 <div className="rounded-xl border p-6">
-                    <Form<ProductFormData>
+                    <Form<CategoryFormData>
                         {...store.form()}
                         className="space-y-6"
                     >
                         {({ processing, errors }) => (
-                            <ProductFormFields
+                            <CategoryFormFields
                                 errors={errors}
                                 processing={processing}
-                                suppliers={suppliers}
-                                brands={brands}
-                                categories={categories}
-                                statuses={statuses}
-                                submitLabel="Create Product"
+                                submitLabel="Create Category"
                             />
                         )}
                     </Form>
@@ -51,14 +40,14 @@ export default function ProductsCreate({ suppliers, brands, categories, statuses
     );
 }
 
-ProductsCreate.layout = {
+CategoriesCreate.layout = {
     breadcrumbs: [
         {
-            title: 'Products',
+            title: 'Categories',
             href: index.url(),
         },
         {
-            title: 'Add Product',
+            title: 'Add Category',
             href: create.url(),
         },
     ],

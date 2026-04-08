@@ -32,6 +32,7 @@ class ProductUpdateRequest extends FormRequest
             'ean' => ['nullable', 'string', 'max:255'],
             'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
             'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'status' => ['nullable', 'string', Rule::in(ProductStatus::cases())],
             'kontor_id' => ['nullable', 'string', 'max:255'],
         ];

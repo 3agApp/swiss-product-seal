@@ -19,6 +19,7 @@ type Props = {
     product?: Product;
     suppliers: { id: number; name: string }[];
     brands: { id: number; name: string; supplier_id: number }[];
+    categories: { id: number; name: string }[];
     statuses: Record<string, string>;
     submitLabel: string;
 };
@@ -29,6 +30,7 @@ export default function ProductFormFields({
     product,
     suppliers,
     brands,
+    categories,
     statuses,
     submitLabel,
 }: Props) {
@@ -181,6 +183,32 @@ export default function ProductFormFields({
                         </SelectContent>
                     </Select>
                     <InputError message={errors.brand_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="category_id">Category</Label>
+                    <Select
+                        name="category_id"
+                        defaultValue={
+                            product?.category_id?.toString() ?? ''
+                        }
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem
+                                    key={category.id}
+                                    value={category.id.toString()}
+                                >
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <InputError message={errors.category_id} />
                 </div>
 
                 <div className="grid gap-2">
