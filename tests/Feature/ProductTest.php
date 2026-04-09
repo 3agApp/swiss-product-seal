@@ -5,6 +5,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Template;
 use Carbon\CarbonInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
@@ -23,12 +24,14 @@ it('requires a category', function () {
     ]))->toThrow(QueryException::class);
 });
 
-it('allows nullable product fields to be omitted when a category is provided', function () {
+it('allows nullable product fields to be omitted when a category and template are provided', function () {
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Test Product',
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     $this->assertModelExists($product);
@@ -40,42 +43,49 @@ it('allows nullable product fields to be omitted when a category is provided', f
         ->and($product->supplier_id)->toBeNull()
         ->and($product->brand_id)->toBeNull()
         ->and($product->category_id)->toBe($category->id)
+        ->and($product->template_id)->toBe($template->id)
         ->and($product->status)->toBe(ProductStatus::Open)
         ->and($product->kontor_id)->toBeNull()
         ->and($product->source_last_sync_at)->toBeNull()
         ->and($product->public_uuid)->not->toBeEmpty();
 });
 
-it('belongs to a supplier, brand, and category', function () {
+it('belongs to a supplier, brand, category, and template', function () {
     $supplier = Supplier::factory()->create();
     $brand = Brand::factory()->for($supplier)->create();
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Compliance Widget',
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     expect($product->supplier->is($supplier))->toBeTrue()
         ->and($product->brand->is($brand))->toBeTrue()
         ->and($product->category->is($category))->toBeTrue()
+        ->and($product->template->is($template))->toBeTrue()
         ->and($supplier->products()->first()?->is($product))->toBeTrue()
         ->and($brand->products()->first()?->is($product))->toBeTrue()
-        ->and($category->products()->first()?->is($product))->toBeTrue();
+        ->and($category->products()->first()?->is($product))->toBeTrue()
+        ->and($template->products()->first()?->is($product))->toBeTrue();
 });
 
 it('casts product attributes', function () {
     $supplier = Supplier::factory()->create();
     $brand = Brand::factory()->for($supplier)->create();
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Tracked Product',
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $category->id,
+        'template_id' => $template->id,
         'status' => ProductStatus::Submitted->value,
         'source_last_sync_at' => '2026-04-04 12:30:00',
     ])->fresh();
@@ -83,16 +93,19 @@ it('casts product attributes', function () {
     expect($product->supplier_id)->toBeInt()
         ->and($product->brand_id)->toBeInt()
         ->and($product->category_id)->toBeInt()
+        ->and($product->template_id)->toBeInt()
         ->and($product->status)->toBe(ProductStatus::Submitted)
         ->and($product->source_last_sync_at)->toBeInstanceOf(CarbonInterface::class);
 });
 
 it('generates a public uuid automatically', function () {
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'UUID Product',
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     expect(Str::isUuid($product->public_uuid))->toBeTrue();
@@ -117,12 +130,14 @@ it('nulls nullable foreign keys when the supplier or brand is deleted', function
     $supplier = Supplier::factory()->create();
     $brand = Brand::factory()->for($supplier)->create();
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Linked Product',
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     $brand->delete();
@@ -136,10 +151,12 @@ it('nulls nullable foreign keys when the supplier or brand is deleted', function
 it('stores multiple product images in the media collection', function () {
     Storage::fake('public');
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Imaged Product',
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     $firstImage = UploadedFile::fake()->image('first-image.jpg');
@@ -157,10 +174,12 @@ it('stores multiple product images in the media collection', function () {
 
 it('registers a higher resolution preview conversion for product images', function () {
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $product = Product::create([
         'name' => 'Preview Product',
         'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
     $media = $product->addMedia(UploadedFile::fake()->image('preview-source.jpg'))

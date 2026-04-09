@@ -15,7 +15,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-#[Fillable(['name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'status', 'kontor_id', 'source_last_sync_at'])]
+#[Fillable(['name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'kontor_id', 'source_last_sync_at'])]
 class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
@@ -43,6 +43,11 @@ class Product extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Template::class);
     }
 
     public function documents(): HasMany
@@ -90,6 +95,7 @@ class Product extends Model implements HasMedia
             'supplier_id' => 'integer',
             'brand_id' => 'integer',
             'category_id' => 'integer',
+            'template_id' => 'integer',
             'source_last_sync_at' => 'datetime',
             'status' => ProductStatus::class,
         ];

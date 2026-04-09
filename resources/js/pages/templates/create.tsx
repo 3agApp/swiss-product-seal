@@ -1,28 +1,25 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import ProductFormFields from '@/components/product-form';
+import TemplateFormFields from '@/components/template-form';
 import { Button } from '@/components/ui/button';
-import { create, index, store } from '@/routes/products';
-import type { ProductFormData } from '@/types';
+import { index, create, store } from '@/routes/templates';
+import type { TemplateFormData } from '@/types';
 
 type Props = {
-    suppliers: { id: number; name: string }[];
-    brands: { id: number; name: string; supplier_id: number }[];
     categories: { id: number; name: string }[];
-    templates: { id: number; name: string; category_id: number }[];
-    statuses: Record<string, string>;
+    documentTypes: Record<string, string>;
 };
 
-export default function ProductsCreate({ suppliers, brands, categories, templates, statuses }: Props) {
+export default function TemplatesCreate({ categories, documentTypes }: Props) {
     return (
         <>
-            <Head title="Add Product" />
+            <Head title="Add Template" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Add Product"
-                        description="Create a new product in the catalog"
+                        title="Add Template"
+                        description="Create a new document requirement template"
                     />
                     <Button variant="outline" asChild>
                         <Link href={index()}>Back to list</Link>
@@ -30,20 +27,17 @@ export default function ProductsCreate({ suppliers, brands, categories, template
                 </div>
 
                 <div className="rounded-xl border p-6">
-                    <Form<ProductFormData>
+                    <Form<TemplateFormData>
                         {...store.form()}
                         className="space-y-6"
                     >
                         {({ processing, errors }) => (
-                            <ProductFormFields
+                            <TemplateFormFields
                                 errors={errors}
                                 processing={processing}
-                                suppliers={suppliers}
-                                brands={brands}
                                 categories={categories}
-                                templates={templates}
-                                statuses={statuses}
-                                submitLabel="Create Product"
+                                documentTypes={documentTypes}
+                                submitLabel="Create Template"
                             />
                         )}
                     </Form>
@@ -53,14 +47,14 @@ export default function ProductsCreate({ suppliers, brands, categories, template
     );
 }
 
-ProductsCreate.layout = {
+TemplatesCreate.layout = {
     breadcrumbs: [
         {
-            title: 'Products',
+            title: 'Templates',
             href: index.url(),
         },
         {
-            title: 'Add Product',
+            title: 'Add Template',
             href: create.url(),
         },
     ],

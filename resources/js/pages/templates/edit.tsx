@@ -1,28 +1,30 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import ProductFormFields from '@/components/product-form';
+import TemplateFormFields from '@/components/template-form';
 import { Button } from '@/components/ui/button';
-import { create, index, store } from '@/routes/products';
-import type { ProductFormData } from '@/types';
+import { index, update } from '@/routes/templates';
+import type { Template, TemplateFormData } from '@/types';
 
 type Props = {
-    suppliers: { id: number; name: string }[];
-    brands: { id: number; name: string; supplier_id: number }[];
+    template: Template;
     categories: { id: number; name: string }[];
-    templates: { id: number; name: string; category_id: number }[];
-    statuses: Record<string, string>;
+    documentTypes: Record<string, string>;
 };
 
-export default function ProductsCreate({ suppliers, brands, categories, templates, statuses }: Props) {
+export default function TemplatesEdit({
+    template,
+    categories,
+    documentTypes,
+}: Props) {
     return (
         <>
-            <Head title="Add Product" />
+            <Head title={`Edit ${template.name}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Add Product"
-                        description="Create a new product in the catalog"
+                        title={template.name}
+                        description="Edit template details"
                     />
                     <Button variant="outline" asChild>
                         <Link href={index()}>Back to list</Link>
@@ -30,20 +32,18 @@ export default function ProductsCreate({ suppliers, brands, categories, template
                 </div>
 
                 <div className="rounded-xl border p-6">
-                    <Form<ProductFormData>
-                        {...store.form()}
+                    <Form<TemplateFormData>
+                        {...update.form(template.id)}
                         className="space-y-6"
                     >
                         {({ processing, errors }) => (
-                            <ProductFormFields
+                            <TemplateFormFields
                                 errors={errors}
                                 processing={processing}
-                                suppliers={suppliers}
-                                brands={brands}
+                                template={template}
                                 categories={categories}
-                                templates={templates}
-                                statuses={statuses}
-                                submitLabel="Create Product"
+                                documentTypes={documentTypes}
+                                submitLabel="Update Template"
                             />
                         )}
                     </Form>
@@ -53,15 +53,15 @@ export default function ProductsCreate({ suppliers, brands, categories, template
     );
 }
 
-ProductsCreate.layout = {
+TemplatesEdit.layout = {
     breadcrumbs: [
         {
-            title: 'Products',
+            title: 'Templates',
             href: index.url(),
         },
         {
-            title: 'Add Product',
-            href: create.url(),
+            title: 'Edit Template',
+            href: '#',
         },
     ],
 };

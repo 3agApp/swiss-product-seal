@@ -20,6 +20,7 @@ type Props = {
     suppliers: { id: number; name: string }[];
     brands: { id: number; name: string; supplier_id: number }[];
     categories: { id: number; name: string }[];
+    templates: { id: number; name: string; category_id: number }[];
     statuses: Record<string, string>;
     submitLabel: string;
 };
@@ -31,6 +32,7 @@ export default function ProductFormFields({
     suppliers,
     brands,
     categories,
+    templates,
     statuses,
     submitLabel,
 }: Props) {
@@ -43,6 +45,9 @@ export default function ProductFormFields({
     const [categoryId, setCategoryId] = useState<string>(
         product?.category_id?.toString() ?? '',
     );
+    const [templateId, setTemplateId] = useState<string>(
+        product?.template_id?.toString() ?? '',
+    );
 
     const filteredBrands = useMemo(
         () =>
@@ -50,6 +55,14 @@ export default function ProductFormFields({
                 ? brands.filter((b) => b.supplier_id === Number(supplierId))
                 : [],
         [brands, supplierId],
+    );
+
+    const filteredTemplates = useMemo(
+        () =>
+            categoryId && categoryId !== '__placeholder__'
+                ? templates.filter((t) => t.category_id === Number(categoryId))
+                : [],
+        [templates, categoryId],
     );
 
     function handleSupplierChange(value: string) {
@@ -193,9 +206,11 @@ export default function ProductFormFields({
                     <input type="hidden" name="category_id" value={categoryId} />
                     <Select
                         value={categoryId || '__placeholder__'}
-                        onValueChange={(value) =>
-                            setCategoryId(value === '__placeholder__' ? '' : value)
-                        }
+                        onValueChange={(value) => {
+                            const newCategoryId = value === '__placeholder__' ? '' : value;
+                            setCategoryId(newCategoryId);
+                            setTemplateId('');
+                        }}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a category" />
@@ -215,6 +230,48 @@ export default function ProductFormFields({
                         </SelectContent>
                     </Select>
                     <InputError message={errors.category_id} />
+                </div>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="template_id">Template</Label>
+                    <input
+                        type="hidden"
+                        name="template_id"
+                        value={templateId === '__placeholder__' ? '' : templateId}
+                    />
+                    <Select
+                        value={templateId || '__placeholder__'}
+                        onValueChange={(value) =>
+                            setTemplateId(value === '__placeholder__' ? '' : value)
+                        }
+                        disabled={!categoryId || categoryId === '__placeholder__'}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue
+                                placeholder={
+                                    categoryId && categoryId !== '__placeholder__'
+                                        ? filteredTemplates.length === 0
+                                            ? 'No templates for this category'
+                                            : 'Select a template'
+                                        : 'Select a category first'
+                                }
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__placeholder__" disabled>
+                                Select a template
+                            </SelectItem>
+                            {filteredTemplates.map((template) => (
+                                <SelectItem
+                                    key={template.id}
+                                    value={template.id.toString()}
+                                >
+                                    {template.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <InputError message={errors.template_id} />
                 </div>
 
                 <div className="grid gap-2">

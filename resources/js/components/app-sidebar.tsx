@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     BookOpen,
     BoxIcon,
+    FileText,
     FolderGit2,
     LayoutGrid,
     Package,
@@ -24,6 +25,7 @@ import { dashboard } from '@/routes';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as productsIndex } from '@/routes/products';
 import { index as suppliersIndex } from '@/routes/suppliers';
+import { index as templatesIndex } from '@/routes/templates';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -41,6 +43,11 @@ const mainNavItems: NavItem[] = [
         title: 'Categories',
         href: categoriesIndex(),
         icon: Tags,
+    },
+    {
+        title: 'Templates',
+        href: templatesIndex(),
+        icon: FileText,
     },
     {
         title: 'Products',

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductDocumentController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TemplateController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])->scopeBindings()->group(function () {
     Route::resource('suppliers', SupplierController::class)->except(['show']);
     Route::resource('suppliers.brands', BrandController::class)->only(['store', 'update', 'destroy']);
     Route::resource('categories', CategoryController::class)->except(['show']);
+    Route::resource('templates', TemplateController::class)->except(['show']);
     Route::resource('products', ProductController::class)->except(['show']);
     Route::post('products/{product}/documents', [ProductDocumentController::class, 'store'])->name('products.documents.store');
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');

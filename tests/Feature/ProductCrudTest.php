@@ -5,6 +5,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\UploadedFile;
@@ -41,6 +42,7 @@ it('stores a new product', function () {
     $supplier = Supplier::factory()->create();
     $brand = Brand::factory()->for($supplier)->create();
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $this->post(route('products.store'), [
         'name' => 'Test Product',
@@ -51,6 +53,7 @@ it('stores a new product', function () {
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $category->id,
+        'template_id' => $template->id,
         'status' => ProductStatus::Open->value,
         'kontor_id' => 'KON-0001',
     ])->assertRedirect(route('products.index'));
@@ -64,17 +67,19 @@ it('stores a new product', function () {
 
 it('validates required fields on store', function () {
     $this->post(route('products.store'), [])
-        ->assertSessionHasErrors(['name', 'category_id']);
+        ->assertSessionHasErrors(['name', 'category_id', 'template_id']);
 });
 
 it('stores a product without supplier and brand', function () {
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $this->post(route('products.store'), [
         'name' => 'Standalone Product',
         'supplier_id' => '',
         'brand_id' => '',
         'category_id' => $category->id,
+        'template_id' => $template->id,
         'status' => ProductStatus::Open->value,
     ])->assertRedirect(route('products.index'));
 
@@ -98,12 +103,14 @@ it('requires the selected brand to belong to the selected supplier on store', fu
     $otherSupplier = Supplier::factory()->create();
     $brand = Brand::factory()->for($otherSupplier)->create();
     $category = Category::factory()->create();
+    $template = Template::factory()->for($category)->create();
 
     $this->post(route('products.store'), [
         'name' => 'Mismatched Product',
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $category->id,
+        'template_id' => $template->id,
         'status' => ProductStatus::Open->value,
     ])->assertSessionHasErrors(['brand_id']);
 
@@ -125,6 +132,7 @@ it('updates an existing product', function () {
         'name' => 'Updated Product Name',
         'ean' => '1234567890123',
         'category_id' => $product->category_id,
+        'template_id' => $product->template_id,
         'status' => ProductStatus::InProgress->value,
     ])->assertRedirect(route('products.index'));
 
@@ -138,7 +146,7 @@ it('validates required fields on update', function () {
     $product = Product::factory()->create();
 
     $this->put(route('products.update', $product), [])
-        ->assertSessionHasErrors(['name', 'category_id']);
+        ->assertSessionHasErrors(['name', 'category_id', 'template_id']);
 });
 
 it('requires the selected brand to belong to the selected supplier on update', function () {
@@ -154,6 +162,7 @@ it('requires the selected brand to belong to the selected supplier on update', f
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
         'category_id' => $product->category_id,
+        'template_id' => $product->template_id,
         'status' => ProductStatus::Open->value,
     ])->assertSessionHasErrors(['brand_id']);
 

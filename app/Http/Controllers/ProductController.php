@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Document;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Template;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,7 +32,7 @@ class ProductController extends Controller
         $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $products = Product::query()
-            ->with(['supplier:id,name', 'brand:id,name', 'category:id,name', 'media'])
+            ->with(['supplier:id,name', 'brand:id,name', 'category:id,name', 'template:id,name', 'media'])
             ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('internal_article_number', 'like', "%{$search}%")
@@ -67,6 +68,7 @@ class ProductController extends Controller
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'templates' => Template::orderBy('name')->get(['id', 'name', 'category_id']),
             'statuses' => ProductStatus::options(),
         ]);
     }
@@ -91,7 +93,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product): Response
     {
-        $product->load(['supplier:id,name', 'brand:id,name,supplier_id', 'category:id,name', 'media']);
+        $product->load(['supplier:id,name', 'brand:id,name,supplier_id', 'category:id,name', 'template:id,name,category_id', 'media']);
 
         return Inertia::render('products/edit', [
             'product' => array_merge($product->toArray(), [
@@ -109,6 +111,7 @@ class ProductController extends Controller
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'templates' => Template::orderBy('name')->get(['id', 'name', 'category_id']),
             'statuses' => ProductStatus::options(),
             'documentTypes' => DocumentType::options(),
         ]);

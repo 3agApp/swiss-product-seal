@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\ProductStatus;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Template;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -30,5 +31,18 @@ class ProductFactory extends Factory
             'kontor_id' => fake()->bothify('KON-####'),
             'source_last_sync_at' => fake()->optional()->dateTime(),
         ];
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterMaking(function (Product $product): void {
+            if (! $product->template_id) {
+                $template = Template::factory()->create(['category_id' => $product->category_id]);
+                $product->template_id = $template->id;
+            }
+        });
     }
 }

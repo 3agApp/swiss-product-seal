@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ProductStatus;
 use App\Models\Brand;
+use App\Models\Template;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,7 @@ class ProductUpdateRequest extends FormRequest
             'supplier_id' => ['nullable', 'required_with:brand_id', 'integer', 'exists:suppliers,id'],
             'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'template_id' => ['required', 'integer', 'exists:templates,id'],
             'status' => ['nullable', 'string', Rule::in(ProductStatus::cases())],
             'kontor_id' => ['nullable', 'string', 'max:255'],
         ];
@@ -57,6 +59,19 @@ class ProductUpdateRequest extends FormRequest
 
             if (! $brandBelongsToSupplier) {
                 $validator->errors()->add('brand_id', 'The selected brand must belong to the selected supplier.');
+            }
+        }, function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty() || ! $this->filled('template_id') || ! $this->filled('category_id')) {
+                return;
+            }
+
+            $templateBelongsToCategory = Template::query()
+                ->whereKey($this->integer('template_id'))
+                ->where('category_id', $this->integer('category_id'))
+                ->exists();
+
+            if (! $templateBelongsToCategory) {
+                $validator->errors()->add('template_id', 'The selected template must belong to the selected category.');
             }
         }];
     }
