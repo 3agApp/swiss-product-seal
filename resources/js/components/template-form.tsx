@@ -14,6 +14,8 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import type { Template, TemplateFormData } from '@/types';
 
+type Requirement = 'none' | 'required' | 'optional';
+
 type Props = {
     errors: Partial<Record<keyof TemplateFormData | `required_document_types.${number}` | `optional_document_types.${number}`, string>>;
     processing: boolean;
@@ -22,6 +24,24 @@ type Props = {
     documentTypes: Record<string, string>;
     submitLabel: string;
 };
+
+function buildInitialAssignments(
+    documentTypes: Record<string, string>,
+    requiredTypes: string[],
+    optionalTypes: string[],
+): Record<string, Requirement> {
+    const assignments: Record<string, Requirement> = {};
+    for (const key of Object.keys(documentTypes)) {
+        if (requiredTypes.includes(key)) {
+            assignments[key] = 'required';
+        } else if (optionalTypes.includes(key)) {
+            assignments[key] = 'optional';
+        } else {
+            assignments[key] = 'none';
+        }
+    }
+    return assignments;
+}
 
 export default function TemplateFormFields({
     errors,
@@ -34,29 +54,24 @@ export default function TemplateFormFields({
     const [categoryId, setCategoryId] = useState<string>(
         template?.category_id?.toString() ?? '',
     );
-    const [requiredTypes, setRequiredTypes] = useState<string[]>(
-        template?.required_document_types ?? [],
-    );
-    const [optionalTypes, setOptionalTypes] = useState<string[]>(
-        template?.optional_document_types ?? [],
+    const [assignments, setAssignments] = useState<Record<string, Requirement>>(
+        () =>
+            buildInitialAssignments(
+                documentTypes,
+                template?.required_document_types ?? [],
+                template?.optional_document_types ?? [],
+            ),
     );
 
-    function toggleRequired(value: string, checked: boolean) {
-        if (checked) {
-            setRequiredTypes((prev) => [...prev, value]);
-            setOptionalTypes((prev) => prev.filter((t) => t !== value));
-        } else {
-            setRequiredTypes((prev) => prev.filter((t) => t !== value));
-        }
-    }
+    const requiredTypes = Object.entries(assignments)
+        .filter(([, v]) => v === 'required')
+        .map(([k]) => k);
+    const optionalTypes = Object.entries(assignments)
+        .filter(([, v]) => v === 'optional')
+        .map(([k]) => k);
 
-    function toggleOptional(value: string, checked: boolean) {
-        if (checked) {
-            setOptionalTypes((prev) => [...prev, value]);
-            setRequiredTypes((prev) => prev.filter((t) => t !== value));
-        } else {
-            setOptionalTypes((prev) => prev.filter((t) => t !== value));
-        }
+    function handleAssignmentChange(docType: string, value: Requirement) {
+        setAssignments((prev) => ({ ...prev, [docType]: value }));
     }
 
     return (
@@ -104,11 +119,16 @@ export default function TemplateFormFields({
                     <InputError message={errors.name} />
                 </div>
 
-                <div className="grid gap-2 sm:col-span-2">
-                    <Label>Required Document Types</Label>
+                <div className="space-y-4 sm:col-span-2">
+                    <Label>Document Types</Label>
+                    <p className="text-sm text-muted-foreground">
+                        For each document type, select whether it is required, optional, or not included in this template.
+                    </p>
+
+                    {/* Hidden inputs for form submission */}
                     {requiredTypes.map((type) => (
                         <input
-                            key={type}
+                            key={`req-${type}`}
                             type="hidden"
                             name="required_document_types[]"
                             value={type}
@@ -117,30 +137,9 @@ export default function TemplateFormFields({
                     {requiredTypes.length === 0 && (
                         <input type="hidden" name="required_document_types" value="" />
                     )}
-                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {Object.entries(documentTypes).map(([value, label]) => (
-                            <label
-                                key={value}
-                                className="flex items-center gap-2 text-sm"
-                            >
-                                <Checkbox
-                                    checked={requiredTypes.includes(value)}
-                                    onCheckedChange={(checked) =>
-                                        toggleRequired(value, !!checked)
-                                    }
-                                />
-                                {label}
-                            </label>
-                        ))}
-                    </div>
-                    <InputError message={errors.required_document_types} />
-                </div>
-
-                <div className="grid gap-2 sm:col-span-2">
-                    <Label>Optional Document Types</Label>
                     {optionalTypes.map((type) => (
                         <input
-                            key={type}
+                            key={`opt-${type}`}
                             type="hidden"
                             name="optional_document_types[]"
                             value={type}
@@ -149,22 +148,40 @@ export default function TemplateFormFields({
                     {optionalTypes.length === 0 && (
                         <input type="hidden" name="optional_document_types" value="" />
                     )}
-                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+                    <div className="rounded-lg border">
+                        <div className="grid grid-cols-[1fr_5rem_5rem] items-center gap-4 border-b bg-muted/50 px-4 py-2.5 text-sm font-medium">
+                            <span>Document Type</span>
+                            <span className="text-center">Required</span>
+                            <span className="text-center">Optional</span>
+                        </div>
                         {Object.entries(documentTypes).map(([value, label]) => (
-                            <label
+                            <div
                                 key={value}
-                                className="flex items-center gap-2 text-sm"
+                                className="grid grid-cols-[1fr_5rem_5rem] items-center gap-4 border-b px-4 py-2.5 last:border-0"
                             >
-                                <Checkbox
-                                    checked={optionalTypes.includes(value)}
-                                    onCheckedChange={(checked) =>
-                                        toggleOptional(value, !!checked)
-                                    }
-                                />
-                                {label}
-                            </label>
+                                <span className="text-sm">{label}</span>
+                                <div className="flex justify-center">
+                                    <Checkbox
+                                        checked={assignments[value] === 'required'}
+                                        onCheckedChange={(checked) =>
+                                            handleAssignmentChange(value, checked ? 'required' : 'none')
+                                        }
+                                    />
+                                </div>
+                                <div className="flex justify-center">
+                                    <Checkbox
+                                        checked={assignments[value] === 'optional'}
+                                        onCheckedChange={(checked) =>
+                                            handleAssignmentChange(value, checked ? 'optional' : 'none')
+                                        }
+                                    />
+                                </div>
+                            </div>
                         ))}
                     </div>
+
+                    <InputError message={errors.required_document_types} />
                     <InputError message={errors.optional_document_types} />
                 </div>
             </div>
