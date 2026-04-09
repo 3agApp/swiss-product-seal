@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Category::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->json('required_document_types')->default('[]');
-            $table->json('optional_document_types')->default('[]');
+            $table->json('required_data_fields')->default('[]');
             $table->timestamps();
         });
     }

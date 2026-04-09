@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignIdFor(Supplier::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
+
+            $table->unique(['supplier_id', 'name']);
         });
     }
 
