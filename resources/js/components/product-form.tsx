@@ -23,6 +23,7 @@ type Props = {
     templates: { id: number; name: string; category_id: number }[];
     statuses: Record<string, string>;
     submitLabel: string;
+    hideCategoryTemplate?: boolean;
 };
 
 export default function ProductFormFields({
@@ -35,6 +36,7 @@ export default function ProductFormFields({
     templates,
     statuses,
     submitLabel,
+    hideCategoryTemplate = false,
 }: Props) {
     const [supplierId, setSupplierId] = useState<string>(
         product?.supplier_id?.toString() ?? '',
@@ -201,78 +203,82 @@ export default function ProductFormFields({
                     <InputError message={errors.brand_id} />
                 </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="category_id">Category</Label>
-                    <input type="hidden" name="category_id" value={categoryId} />
-                    <Select
-                        value={categoryId || '__placeholder__'}
-                        onValueChange={(value) => {
-                            const newCategoryId = value === '__placeholder__' ? '' : value;
-                            setCategoryId(newCategoryId);
-                            setTemplateId('');
-                        }}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__placeholder__" disabled>
-                                Select a category
-                            </SelectItem>
-                            {categories.map((category) => (
-                                <SelectItem
-                                    key={category.id}
-                                    value={category.id.toString()}
-                                >
-                                    {category.name}
+                {!hideCategoryTemplate && (
+                    <div className="grid gap-2">
+                        <Label htmlFor="category_id">Category</Label>
+                        <input type="hidden" name="category_id" value={categoryId} />
+                        <Select
+                            value={categoryId || '__placeholder__'}
+                            onValueChange={(value) => {
+                                const newCategoryId = value === '__placeholder__' ? '' : value;
+                                setCategoryId(newCategoryId);
+                                setTemplateId('');
+                            }}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__placeholder__" disabled>
+                                    Select a category
                                 </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.category_id} />
-                </div>
+                                {categories.map((category) => (
+                                    <SelectItem
+                                        key={category.id}
+                                        value={category.id.toString()}
+                                    >
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.category_id} />
+                    </div>
+                )}
 
-                <div className="grid gap-2">
-                    <Label htmlFor="template_id">Template</Label>
-                    <input
-                        type="hidden"
-                        name="template_id"
-                        value={templateId === '__placeholder__' ? '' : templateId}
-                    />
-                    <Select
-                        value={templateId || '__placeholder__'}
-                        onValueChange={(value) =>
-                            setTemplateId(value === '__placeholder__' ? '' : value)
-                        }
-                        disabled={!categoryId || categoryId === '__placeholder__'}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue
-                                placeholder={
-                                    categoryId && categoryId !== '__placeholder__'
-                                        ? filteredTemplates.length === 0
-                                            ? 'No templates for this category'
-                                            : 'Select a template'
-                                        : 'Select a category first'
-                                }
-                            />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__placeholder__" disabled>
-                                Select a template
-                            </SelectItem>
-                            {filteredTemplates.map((template) => (
-                                <SelectItem
-                                    key={template.id}
-                                    value={template.id.toString()}
-                                >
-                                    {template.name}
+                {!hideCategoryTemplate && (
+                    <div className="grid gap-2">
+                        <Label htmlFor="template_id">Template</Label>
+                        <input
+                            type="hidden"
+                            name="template_id"
+                            value={templateId === '__placeholder__' ? '' : templateId}
+                        />
+                        <Select
+                            value={templateId || '__placeholder__'}
+                            onValueChange={(value) =>
+                                setTemplateId(value === '__placeholder__' ? '' : value)
+                            }
+                            disabled={!categoryId || categoryId === '__placeholder__'}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue
+                                    placeholder={
+                                        categoryId && categoryId !== '__placeholder__'
+                                            ? filteredTemplates.length === 0
+                                                ? 'No templates for this category'
+                                                : 'Select a template'
+                                            : 'Select a category first'
+                                    }
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__placeholder__" disabled>
+                                    Select a template
                                 </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.template_id} />
-                </div>
+                                {filteredTemplates.map((template) => (
+                                    <SelectItem
+                                        key={template.id}
+                                        value={template.id.toString()}
+                                    >
+                                        {template.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.template_id} />
+                    </div>
+                )}
 
                 <div className="grid gap-2">
                     <Label htmlFor="status">Status</Label>

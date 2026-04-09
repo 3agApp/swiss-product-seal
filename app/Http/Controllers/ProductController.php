@@ -67,9 +67,10 @@ class ProductController extends Controller
         return Inertia::render('products/create', [
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'supplier_id']),
-            'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'templates' => Template::orderBy('name')->get(['id', 'name', 'category_id']),
+            'categories' => Category::orderBy('name')->get(['id', 'name', 'description']),
+            'templates' => Template::orderBy('name')->get(['id', 'name', 'category_id', 'required_document_types', 'optional_document_types']),
             'statuses' => ProductStatus::options(),
+            'documentTypes' => DocumentType::options(),
         ]);
     }
 

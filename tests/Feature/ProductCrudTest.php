@@ -32,10 +32,21 @@ it('redirects guests to login from products index', function () {
         ->assertRedirect(route('login'));
 });
 
-it('displays the create product form', function () {
+it('displays the create product form with categories and document types', function () {
+    $category = Category::factory()->create();
+    Template::factory()->for($category)->create();
+
     $this->get(route('products.create'))
         ->assertSuccessful()
-        ->assertInertia(fn (Assert $page) => $page->component('products/create'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('products/create')
+            ->has('categories')
+            ->has('templates')
+            ->has('documentTypes')
+            ->has('suppliers')
+            ->has('brands')
+            ->has('statuses')
+        );
 });
 
 it('stores a new product', function () {
