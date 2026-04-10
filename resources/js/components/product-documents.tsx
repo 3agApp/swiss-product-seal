@@ -2,6 +2,7 @@ import {
     Download,
     FilePlus2,
     FileText,
+    Globe,
     History,
     RefreshCw,
 } from 'lucide-react';
@@ -27,9 +28,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { store } from '@/routes/products/documents';
+import { store, togglePublicDownload } from '@/routes/products/documents';
 import type {
     DocumentFormErrors,
     DocumentFormState,
@@ -162,6 +164,7 @@ export default function ProductDocuments({
         useState<ProductDocument[]>(initialDocuments);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set());
     const [errors, setErrors] = useState<DocumentFormErrors>({});
     const [form, setForm] = useState<DocumentFormState>(defaultFormState);
 
@@ -188,6 +191,53 @@ export default function ProductDocuments({
 
         if (!open) {
             resetForm();
+        }
+    }
+
+    async function handleTogglePublicDownload(documentId: number) {
+        setTogglingIds((prev) => new Set(prev).add(documentId));
+
+        try {
+            const response = await fetch(
+                togglePublicDownload.url({ product: productId, document: documentId }),
+                {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-XSRF-TOKEN': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to update');
+            }
+
+            const data = await response.json();
+
+            setDocuments((current) =>
+                current.map((doc) =>
+                    doc.id === documentId
+                        ? { ...doc, public_download: data.public_download }
+                        : doc,
+                ),
+            );
+
+            toast.success(
+                data.public_download
+                    ? 'Document is now publicly visible.'
+                    : 'Document is no longer publicly visible.',
+            );
+        } catch {
+            toast.error('Failed to update public visibility.');
+        } finally {
+            setTogglingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(documentId);
+                return next;
+            });
         }
     }
 
@@ -348,7 +398,7 @@ export default function ProductDocuments({
                                     )}
                                 </div>
 
-                                <dl className="grid gap-3 text-sm sm:grid-cols-3">
+                                <dl className="grid gap-3 text-sm sm:grid-cols-4">
                                     <div>
                                         <dt className="text-xs text-muted-foreground">
                                             Expires
@@ -373,6 +423,25 @@ export default function ProductDocuments({
                                             {renderComment(
                                                 document.review_comment,
                                             )}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-xs text-muted-foreground">
+                                            Public
+                                        </dt>
+                                        <dd className="mt-1 flex items-center gap-2">
+                                            <Switch
+                                                size="sm"
+                                                checked={document.public_download}
+                                                disabled={togglingIds.has(document.id)}
+                                                onCheckedChange={() =>
+                                                    handleTogglePublicDownload(document.id)
+                                                }
+                                            />
+                                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Globe className="size-3" />
+                                                {document.public_download ? 'Visible' : 'Hidden'}
+                                            </span>
                                         </dd>
                                     </div>
                                 </dl>

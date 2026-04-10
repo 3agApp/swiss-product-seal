@@ -71,6 +71,20 @@ class ProductDocumentController extends Controller
     }
 
     /**
+     * Toggle the public download visibility of a document.
+     */
+    public function togglePublicDownload(Product $product, Document $document): JsonResponse
+    {
+        abort_unless($document->product_id === $product->id, 404);
+
+        $document->update(['public_download' => ! $document->public_download]);
+
+        return response()->json([
+            'public_download' => $document->public_download,
+        ]);
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     private function formatDocuments(Product $product): array
@@ -126,6 +140,7 @@ class ProductDocumentController extends Controller
             'updated_at' => $document->updated_at?->toIso8601String(),
             'replaces_document_id' => $document->replaces_document_id,
             'is_current' => $document->is_current,
+            'public_download' => $document->public_download,
         ];
     }
 }

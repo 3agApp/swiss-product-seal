@@ -117,3 +117,39 @@ it('includes current documents and version history on the product edit page', fu
             ->where('documentTypes.'.DocumentType::DeclarationOfConformity->value, 'Declaration of conformity')
         );
 });
+
+it('toggles public download on a document', function () {
+    $product = Product::factory()->create();
+    $document = Document::factory()->for($product)->create(['public_download' => false]);
+
+    $this->patchJson(route('products.documents.toggle-public-download', [$product, $document]))
+        ->assertSuccessful()
+        ->assertJsonPath('public_download', true);
+
+    expect($document->fresh()->public_download)->toBeTrue();
+
+    $this->patchJson(route('products.documents.toggle-public-download', [$product, $document]))
+        ->assertSuccessful()
+        ->assertJsonPath('public_download', false);
+
+    expect($document->fresh()->public_download)->toBeFalse();
+});
+
+it('returns 404 when toggling a document that belongs to another product', function () {
+    $product = Product::factory()->create();
+    $otherProduct = Product::factory()->create();
+    $document = Document::factory()->for($otherProduct)->create();
+
+    $this->patchJson(route('products.documents.toggle-public-download', [$product, $document]))
+        ->assertNotFound();
+});
+
+it('requires authentication to toggle public download', function () {
+    $product = Product::factory()->create();
+    $document = Document::factory()->for($product)->create();
+
+    auth()->logout();
+
+    $this->patchJson(route('products.documents.toggle-public-download', [$product, $document]))
+        ->assertUnauthorized();
+});

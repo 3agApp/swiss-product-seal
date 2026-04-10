@@ -238,6 +238,7 @@ class ProductController extends Controller
             'updated_at' => $document->updated_at?->toIso8601String(),
             'replaces_document_id' => $document->replaces_document_id,
             'is_current' => $document->is_current,
+            'public_download' => $document->public_download,
         ];
     }
 }

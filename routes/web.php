@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->scopeBindings()->group(function () {
     Route::resource('templates', TemplateController::class)->except(['show']);
     Route::resource('products', ProductController::class);
     Route::post('products/{product}/documents', [ProductDocumentController::class, 'store'])->name('products.documents.store');
+    Route::patch('products/{product}/documents/{document}/toggle-public-download', [ProductDocumentController::class, 'togglePublicDownload'])->name('products.documents.toggle-public-download');
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');
     Route::delete('products/{product}/images/{media}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
     Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
