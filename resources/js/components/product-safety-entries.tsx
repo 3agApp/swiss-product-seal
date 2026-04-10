@@ -5,22 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { update } from '@/routes/products/safety-entry';
-import type { ProductSafetyEntry } from '@/types';
+import type { ProductSafetyEntry, SafetyFormState } from '@/types';
 
 type Props = {
     productId: number;
     initialSafetyEntry: ProductSafetyEntry | null;
     requiredDataFields: string[];
-};
-
-type SafetyFormState = {
-    safety_text: string;
-    warning_text: string;
-    age_grading: string;
-    material_information: string;
-    usage_restrictions: string;
-    safety_instructions: string;
-    additional_notes: string;
 };
 
 const FIELDS: { key: keyof SafetyFormState; label: string }[] = [

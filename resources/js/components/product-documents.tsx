@@ -30,7 +30,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { store } from '@/routes/products/documents';
-import type { ProductDocument } from '@/types';
+import type { DocumentFormErrors, DocumentFormState, DuplicateStrategy, ProductDocument } from '@/types';
 
 type Props = {
     productId: number;
@@ -38,30 +38,17 @@ type Props = {
     initialDocuments: ProductDocument[];
 };
 
-type DuplicateStrategy = 'add_new' | 'replace_existing';
-
-type FormState = {
-    file: File | null;
-    type: string;
-    expiry_date: string;
-    review_comment: string;
-    duplicate_strategy: DuplicateStrategy;
-    replace_document_id: string;
-};
-
-type FormErrors = Partial<Record<keyof FormState, string>>;
-
 class RequestError extends Error {
-    public errors: FormErrors;
+    public errors: DocumentFormErrors;
 
-    constructor(message: string, errors: FormErrors = {}) {
+    constructor(message: string, errors: DocumentFormErrors = {}) {
         super(message);
         this.name = 'RequestError';
         this.errors = errors;
     }
 }
 
-const defaultFormState: FormState = {
+const defaultFormState: DocumentFormState = {
     file: null,
     type: '',
     expiry_date: '',
@@ -76,14 +63,14 @@ function getCsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-function mapErrors(errors: Record<string, string[]> | undefined): FormErrors {
+function mapErrors(errors: Record<string, string[]> | undefined): DocumentFormErrors {
     if (!errors) {
         return {};
     }
 
     return Object.fromEntries(
         Object.entries(errors).map(([key, value]) => [key, value[0]]),
-    ) as FormErrors;
+    ) as DocumentFormErrors;
 }
 
 async function request(
@@ -167,8 +154,8 @@ export default function ProductDocuments({
     );
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [errors, setErrors] = useState<FormErrors>({});
-    const [form, setForm] = useState<FormState>(defaultFormState);
+    const [errors, setErrors] = useState<DocumentFormErrors>({});
+    const [form, setForm] = useState<DocumentFormState>(defaultFormState);
 
     const existingDocumentsForType = useMemo(
         () => documents.filter((document) => document.type === form.type),

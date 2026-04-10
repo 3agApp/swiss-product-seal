@@ -1,3 +1,4 @@
+export type * from './appearance';
 export type * from './auth';
 export type * from './category';
 export type * from './flash';

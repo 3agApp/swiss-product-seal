@@ -8,16 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { create, index, store } from '@/routes/products';
-import type { ProductFormData } from '@/types';
+import type { CategoryItem, ProductFormData, TemplateItem } from '@/types';
 import { cn } from '@/lib/utils';
-
-type CategoryItem = { id: number; name: string; description: string | null };
-type TemplateItem = {
-    id: number;
-    name: string;
-    category_id: number;
-    required_document_types: string[];
-};
 
 type Props = {
     suppliers: { id: number; name: string }[];

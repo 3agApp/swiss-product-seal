@@ -82,3 +82,35 @@ export type ProductFormData = {
     status: string;
     kontor_id: string;
 };
+
+export type DuplicateStrategy = 'add_new' | 'replace_existing';
+
+export type DocumentFormState = {
+    file: File | null;
+    type: string;
+    expiry_date: string;
+    review_comment: string;
+    duplicate_strategy: DuplicateStrategy;
+    replace_document_id: string;
+};
+
+export type DocumentFormErrors = Partial<Record<keyof DocumentFormState, string>>;
+
+export type SafetyFormState = {
+    safety_text: string;
+    warning_text: string;
+    age_grading: string;
+    material_information: string;
+    usage_restrictions: string;
+    safety_instructions: string;
+    additional_notes: string;
+};
+
+export type CategoryItem = { id: number; name: string; description: string | null };
+
+export type TemplateItem = {
+    id: number;
+    name: string;
+    category_id: number;
+    required_document_types: string[];
+};
