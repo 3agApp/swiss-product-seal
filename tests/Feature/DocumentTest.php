@@ -63,3 +63,15 @@ it('stores uploaded media on a document record', function () {
     expect($document->getMedia('file'))->toHaveCount(1)
         ->and($document->getFirstMedia('file')?->file_name)->toBe('regulatory-document.pdf');
 });
+
+it('defaults public_download to false and can be enabled', function () {
+    $product = Product::factory()->create();
+
+    $document = Document::factory()->for($product)->create();
+    expect($document->public_download)->toBeFalse();
+
+    $publicDocument = Document::factory()->for($product)->publicDownload()->create();
+    expect($publicDocument->public_download)->toBeTrue();
+
+    expect($product->documents()->where('public_download', true)->count())->toBe(1);
+});

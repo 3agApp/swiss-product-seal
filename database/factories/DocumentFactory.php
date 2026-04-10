@@ -26,7 +26,15 @@ class DocumentFactory extends Factory
             'expiry_date' => fake()->optional()->date('Y-m-d'),
             'review_comment' => fake()->optional()->sentence(),
             'is_current' => true,
+            'public_download' => false,
         ];
+    }
+
+    public function publicDownload(): static
+    {
+        return $this->state(fn (): array => [
+            'public_download' => true,
+        ]);
     }
 
     public function replacementOf(Document $document): static

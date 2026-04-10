@@ -22,6 +22,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'expiry_date',
     'review_comment',
     'is_current',
+    'public_download',
 ])]
 class Document extends Model implements HasMedia
 {
@@ -36,6 +37,7 @@ class Document extends Model implements HasMedia
     protected $attributes = [
         'version' => 1,
         'is_current' => true,
+        'public_download' => false,
     ];
 
     protected static function booted(): void
@@ -82,6 +84,7 @@ class Document extends Model implements HasMedia
             'version' => 'integer',
             'expiry_date' => 'date',
             'is_current' => 'boolean',
+            'public_download' => 'boolean',
             'type' => DocumentType::class,
         ];
     }
