@@ -129,11 +129,32 @@ export default function TemplateFormFields({
                 </div>
 
                 <div className="space-y-4 sm:col-span-2">
-                    <Label>Document Types</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Select which document types are required for products
-                        using this template.
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <Label>Document Types</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Select which document types are required for products
+                                using this template.
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                const allKeys = Object.keys(documentTypes);
+                                setSelectedDocTypes((prev) =>
+                                    prev.size === allKeys.length
+                                        ? new Set()
+                                        : new Set(allKeys),
+                                );
+                            }}
+                        >
+                            {selectedDocTypes.size === Object.keys(documentTypes).length
+                                ? 'Deselect all'
+                                : 'Select all'}
+                        </Button>
+                    </div>
 
                     {/* Hidden inputs for form submission */}
                     {requiredDocTypes.map((type) => (
@@ -185,11 +206,32 @@ export default function TemplateFormFields({
                 </div>
 
                 <div className="space-y-4 sm:col-span-2">
-                    <Label>Required Data Fields</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Select which safety data fields are required for
-                        products using this template.
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <Label>Required Data Fields</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Select which safety data fields are required for
+                                products using this template.
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                const allKeys = DATA_FIELDS.map((f) => f.value);
+                                setSelectedDataFields((prev) =>
+                                    prev.size === allKeys.length
+                                        ? new Set()
+                                        : new Set(allKeys),
+                                );
+                            }}
+                        >
+                            {selectedDataFields.size === DATA_FIELDS.length
+                                ? 'Deselect all'
+                                : 'Select all'}
+                        </Button>
+                    </div>
 
                     {requiredDataFields.map((field) => (
                         <input

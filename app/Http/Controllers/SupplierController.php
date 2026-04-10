@@ -89,7 +89,7 @@ class SupplierController extends Controller
             'message' => 'Supplier updated successfully.',
         ]);
 
-        return to_route('suppliers.index');
+        return to_route('suppliers.edit', $supplier);
     }
 
     /**

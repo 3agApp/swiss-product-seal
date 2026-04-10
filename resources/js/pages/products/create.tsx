@@ -238,6 +238,7 @@ export default function ProductsCreate({
         useState<CategoryItem | null>(null);
     const [selectedTemplate, setSelectedTemplate] =
         useState<TemplateItem | null>(null);
+    const [templateWasReset, setTemplateWasReset] = useState(false);
 
     const filteredTemplates = useMemo(
         () =>
@@ -249,6 +250,10 @@ export default function ProductsCreate({
 
     function handleCategorySelect(category: CategoryItem) {
         if (selectedCategory?.id !== category.id) {
+            if (selectedTemplate) {
+                setTemplateWasReset(true);
+                setTimeout(() => setTemplateWasReset(false), 3000);
+            }
             setSelectedTemplate(null);
         }
 
@@ -370,22 +375,35 @@ export default function ProductsCreate({
                     )}
 
                     {step < 2 && (
-                        <div className="mt-8 flex items-center justify-between">
-                            <Button
-                                variant="outline"
-                                onClick={() => setStep((s) => s - 1)}
-                                disabled={step === 0}
-                            >
-                                <ArrowLeft className="size-4" />
-                                Back
-                            </Button>
-                            <Button
-                                onClick={() => setStep((s) => s + 1)}
-                                disabled={!canProceed()}
-                            >
-                                Next
-                                <ArrowRight className="size-4" />
-                            </Button>
+                        <div className="mt-8 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setStep((s) => s - 1)}
+                                    disabled={step === 0}
+                                >
+                                    <ArrowLeft className="size-4" />
+                                    Back
+                                </Button>
+                                <Button
+                                    onClick={() => setStep((s) => s + 1)}
+                                    disabled={!canProceed()}
+                                >
+                                    Next
+                                    <ArrowRight className="size-4" />
+                                </Button>
+                            </div>
+                            {!canProceed() && (
+                                <p className="text-center text-sm text-muted-foreground">
+                                    {step === 0 && 'Select a category to continue'}
+                                    {step === 1 && 'Select a template to continue'}
+                                </p>
+                            )}
+                            {templateWasReset && step === 0 && (
+                                <p className="text-center text-sm text-amber-600 dark:text-amber-400">
+                                    Template selection was reset because the category changed
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

@@ -87,7 +87,7 @@ export default function SupplierFormFields({
                         id="country"
                         name="country"
                         defaultValue={supplier?.country ?? ''}
-                        placeholder="Country"
+                        placeholder="e.g. Germany, China, United States"
                     />
                     <InputError message={errors.country} />
                 </div>

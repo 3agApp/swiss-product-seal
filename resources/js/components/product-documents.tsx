@@ -53,6 +53,8 @@ class RequestError extends Error {
     }
 }
 
+const MAX_DOCUMENT_SIZE = 20 * 1024 * 1024; // 20MB
+
 const defaultFormState: DocumentFormState = {
     file: null,
     type: '',
@@ -458,13 +460,18 @@ export default function ProductDocuments({
                                     id="document-file"
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx"
-                                    onChange={(event) =>
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0] ?? null;
+                                        if (file && file.size > MAX_DOCUMENT_SIZE) {
+                                            toast.error(`File too large: ${file.name}. Maximum size is 20MB.`);
+                                            event.target.value = '';
+                                            return;
+                                        }
                                         setForm((current) => ({
                                             ...current,
-                                            file:
-                                                event.target.files?.[0] ?? null,
-                                        }))
-                                    }
+                                            file,
+                                        }));
+                                    }}
                                 />
                                 <InputError message={errors.file} />
                             </div>

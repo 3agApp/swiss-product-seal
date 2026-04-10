@@ -88,7 +88,7 @@ class CategoryController extends Controller
             'message' => 'Category updated successfully.',
         ]);
 
-        return to_route('categories.index');
+        return to_route('categories.edit', $category);
     }
 
     /**

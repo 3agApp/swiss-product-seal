@@ -11,6 +11,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
+import { LoaderCircle } from 'lucide-react';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -67,16 +68,19 @@ export default function ProductsIndex({ products, filters }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [localSearch, setLocalSearch] = useState<string | null>(null);
+    const [searching, setSearching] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
     const search = localSearch ?? filters.search ?? '';
 
     const applyFilters = useCallback(
         (params: Record<string, string | undefined>) => {
+            setSearching(true);
             router.get(index.url(), params, {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => setLocalSearch(null),
+                onFinish: () => setSearching(false),
             });
         },
         [],
@@ -173,7 +177,9 @@ export default function ProductsIndex({ products, filters }: Props) {
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="pr-9 pl-9"
                     />
-                    {search && (
+                    {searching ? (
+                        <LoaderCircle className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                    ) : search ? (
                         <button
                             type="button"
                             onClick={() => handleSearchChange('')}
@@ -181,7 +187,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                         >
                             <X className="size-4" />
                         </button>
-                    )}
+                    ) : null}
                 </div>
 
                 <div className="rounded-xl border">
@@ -251,16 +257,26 @@ export default function ProductsIndex({ products, filters }: Props) {
                                     <tr>
                                         <td
                                             colSpan={8}
-                                            className="px-4 py-8 text-center text-muted-foreground"
+                                            className="px-4 py-12 text-center"
                                         >
-                                            No products found.
+                                            <p className="text-muted-foreground">No products found.</p>
+                                            {search && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSearchChange('')}
+                                                    className="mt-2 text-sm text-primary hover:underline"
+                                                >
+                                                    Clear search
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 )}
                                 {products.data.map((product) => (
                                     <tr
                                         key={product.id}
-                                        className="border-b transition-colors last:border-0 hover:bg-muted/30"
+                                        className="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/30"
+                                        onClick={() => router.visit(show(product.id))}
                                     >
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {product.image_preview_url ? (
@@ -312,7 +328,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                                                 </Badge>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                                        <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
                                                 <Button
                                                     variant="ghost"

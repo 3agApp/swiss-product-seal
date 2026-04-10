@@ -164,7 +164,7 @@ class ProductController extends Controller
             'message' => 'Product updated successfully.',
         ]);
 
-        return to_route('products.index');
+        return to_route('products.edit', $product);
     }
 
     /**

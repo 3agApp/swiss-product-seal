@@ -98,7 +98,7 @@ class TemplateController extends Controller
             'message' => 'Template updated successfully.',
         ]);
 
-        return to_route('templates.index');
+        return to_route('templates.edit', $template);
     }
 
     /**

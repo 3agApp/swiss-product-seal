@@ -13,6 +13,8 @@ type Props = {
     requiredDataFields: string[];
 };
 
+const MAX_CHARS = 5000;
+
 const FIELDS: { key: keyof SafetyFormState; label: string }[] = [
     { key: 'safety_text', label: 'Safety notice text' },
     { key: 'warning_text', label: 'Warning text' },
@@ -126,12 +128,20 @@ export default function ProductSafetyEntries({
                                 }
                                 placeholder={`Enter ${label.toLowerCase()}...`}
                                 rows={3}
+                                maxLength={MAX_CHARS}
                             />
-                            {errors[key] && (
-                                <p className="text-sm text-destructive">
-                                    {errors[key]}
-                                </p>
-                            )}
+                            <div className="flex items-center justify-between">
+                                {errors[key] ? (
+                                    <p className="text-sm text-destructive">
+                                        {errors[key]}
+                                    </p>
+                                ) : (
+                                    <span />
+                                )}
+                                <span className={`text-xs ${form[key].length > MAX_CHARS * 0.9 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                                    {form[key].length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+                                </span>
+                            </div>
                         </div>
                     );
                 })}

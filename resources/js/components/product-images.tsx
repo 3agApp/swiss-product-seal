@@ -29,6 +29,8 @@ type Props = {
 };
 
 const MAX_IMAGES = 10;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 function getCsrfToken(): string {
     const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -160,6 +162,19 @@ export default function ProductImages({ productId, initialImages }: Props) {
         }
 
         const filesToUpload = Array.from(files).slice(0, remaining);
+
+        const invalidType = filesToUpload.filter((f) => !ACCEPTED_TYPES.includes(f.type));
+        if (invalidType.length > 0) {
+            toast.error(`Unsupported file type: ${invalidType.map((f) => f.name).join(', ')}. Use JPEG, PNG, or WebP.`);
+            return;
+        }
+
+        const tooLarge = filesToUpload.filter((f) => f.size > MAX_FILE_SIZE);
+        if (tooLarge.length > 0) {
+            toast.error(`File too large: ${tooLarge.map((f) => f.name).join(', ')}. Maximum size is 10MB.`);
+            return;
+        }
+
         const formData = new FormData();
         filesToUpload.forEach((file) => formData.append('images[]', file));
 

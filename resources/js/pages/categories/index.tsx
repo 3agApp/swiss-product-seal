@@ -10,6 +10,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
+import { LoaderCircle } from 'lucide-react';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
@@ -40,16 +41,19 @@ export default function CategoriesIndex({ categories, filters }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [localSearch, setLocalSearch] = useState<string | null>(null);
+    const [searching, setSearching] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
     const search = localSearch ?? filters.search ?? '';
 
     const applyFilters = useCallback(
         (params: Record<string, string | undefined>) => {
+            setSearching(true);
             router.get(index.url(), params, {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: () => setLocalSearch(null),
+                onFinish: () => setSearching(false),
             });
         },
         [],
@@ -146,7 +150,9 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="pr-9 pl-9"
                     />
-                    {search && (
+                    {searching ? (
+                        <LoaderCircle className="absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                    ) : search ? (
                         <button
                             type="button"
                             onClick={() => handleSearchChange('')}
@@ -154,7 +160,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                         >
                             <X className="size-4" />
                         </button>
-                    )}
+                    ) : null}
                 </div>
 
                 <div className="rounded-xl border">
@@ -196,16 +202,26 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                                     <tr>
                                         <td
                                             colSpan={4}
-                                            className="px-4 py-8 text-center text-muted-foreground"
+                                            className="px-4 py-12 text-center"
                                         >
-                                            No categories found.
+                                            <p className="text-muted-foreground">No categories found.</p>
+                                            {search && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSearchChange('')}
+                                                    className="mt-2 text-sm text-primary hover:underline"
+                                                >
+                                                    Clear search
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 )}
                                 {categories.data.map((category) => (
                                     <tr
                                         key={category.id}
-                                        className="border-b transition-colors last:border-0 hover:bg-muted/30"
+                                        className="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/30"
+                                        onClick={() => router.visit(edit(category.id))}
                                     >
                                         <td className="px-4 py-3 font-medium whitespace-nowrap">
                                             {category.name}
@@ -216,7 +232,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                                         <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
                                             {category.products_count ?? 0}
                                         </td>
-                                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                                        <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
                                                 <Button
                                                     variant="ghost"
