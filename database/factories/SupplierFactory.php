@@ -25,7 +25,6 @@ class SupplierFactory extends Factory
             'email' => fake()->companyEmail(),
             'phone' => fake()->phoneNumber(),
             'active' => fake()->boolean(),
-            'kontor_id' => fake()->bothify('KON-####'),
         ];
     }
 }

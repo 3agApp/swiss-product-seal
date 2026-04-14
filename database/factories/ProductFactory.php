@@ -30,7 +30,6 @@ class ProductFactory extends Factory
                 'organization_id' => $attributes['organization_id'],
             ])->id,
             'status' => ProductStatus::Open,
-            'kontor_id' => fake()->bothify('KON-####'),
             'source_last_sync_at' => fake()->optional()->dateTime(),
         ];
     }

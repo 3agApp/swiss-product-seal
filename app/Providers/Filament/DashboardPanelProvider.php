@@ -7,6 +7,7 @@ use App\Filament\Pages\Tenancy\EditOrganizationProfile;
 use App\Filament\Pages\Tenancy\RegisterOrganization;
 use App\Filament\Resources\Invitations\InvitationResource;
 use App\Filament\Resources\OrganizationMemberResource;
+use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Suppliers\Resources\Brands\BrandResource;
 use App\Filament\Resources\Suppliers\SupplierResource;
 use App\Models\Organization;
@@ -55,6 +56,7 @@ class DashboardPanelProvider extends PanelProvider
             ->resources([
                 SupplierResource::class,
                 BrandResource::class,
+                ProductResource::class,
                 OrganizationMemberResource::class,
                 InvitationResource::class,
             ])

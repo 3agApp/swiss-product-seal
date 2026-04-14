@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\Brand;
 use App\Models\Invitation;
 use App\Models\Organization;
+use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +20,9 @@ dataset('tenant_filament_pages', [
     'suppliers index' => ['filament.dashboard.resources.suppliers.index'],
     'suppliers create' => ['filament.dashboard.resources.suppliers.create'],
     'suppliers edit' => ['filament.dashboard.resources.suppliers.edit'],
+    'products index' => ['filament.dashboard.resources.products.index'],
+    'products create' => ['filament.dashboard.resources.products.create'],
+    'products edit' => ['filament.dashboard.resources.products.edit'],
     'supplier brands index' => ['filament.dashboard.resources.suppliers.brands.index'],
     'supplier brands create' => ['filament.dashboard.resources.suppliers.brands.create'],
     'supplier brands edit' => ['filament.dashboard.resources.suppliers.brands.edit'],
@@ -38,6 +42,12 @@ beforeEach(function () {
     $this->brand = Brand::factory()->create([
         'organization_id' => $this->organization->id,
         'supplier_id' => $this->supplier->id,
+    ]);
+
+    $this->product = Product::factory()->create([
+        'organization_id' => $this->organization->id,
+        'supplier_id' => $this->supplier->id,
+        'brand_id' => $this->brand->id,
     ]);
 
     Invitation::factory()->create([
@@ -62,6 +72,10 @@ it('loads each tenant filament page', function (string $routeName) {
 
     if ($routeName === 'filament.dashboard.resources.suppliers.edit') {
         $parameters['record'] = $this->supplier;
+    }
+
+    if ($routeName === 'filament.dashboard.resources.products.edit') {
+        $parameters['record'] = $this->product;
     }
 
     if (str_starts_with($routeName, 'filament.dashboard.resources.suppliers.brands.')) {

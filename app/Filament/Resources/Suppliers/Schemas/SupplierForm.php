@@ -33,9 +33,6 @@ class SupplierForm
                             ->maxLength(255),
                         TextInput::make('country')
                             ->maxLength(255),
-                        TextInput::make('kontor_id')
-                            ->label('Kontor ID')
-                            ->maxLength(255),
                         TextInput::make('address')
                             ->columnSpanFull()
                             ->maxLength(255),

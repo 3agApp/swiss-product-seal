@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('status')->nullable()->default(ProductStatus::Open->value);
             $table->decimal('completeness_score', 5, 2)->default(0);
             $table->string('seal_status_override')->nullable();
-            $table->string('kontor_id')->nullable();
             $table->timestamp('source_last_sync_at')->nullable();
             $table->uuid('public_uuid')->unique();
             $table->timestamps();

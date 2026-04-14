@@ -5,6 +5,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Invitation;
 use App\Models\Organization;
+use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
@@ -121,6 +122,27 @@ describe('BrandPolicy', function () {
         expect($this->member->can('viewAny', Brand::class))->toBeFalse()
             ->and($this->member->can('create', Brand::class))->toBeFalse()
             ->and($this->member->can('delete', $brand))->toBeFalse();
+    });
+});
+
+describe('ProductPolicy', function () {
+    it('allows owner and admin to manage products', function () {
+        $product = Product::factory()->create(['organization_id' => $this->organization->id]);
+
+        expect($this->owner->can('viewAny', Product::class))->toBeTrue()
+            ->and($this->owner->can('create', Product::class))->toBeTrue()
+            ->and($this->owner->can('delete', $product))->toBeTrue()
+            ->and($this->admin->can('viewAny', Product::class))->toBeTrue()
+            ->and($this->admin->can('create', Product::class))->toBeTrue()
+            ->and($this->admin->can('delete', $product))->toBeTrue();
+    });
+
+    it('prevents members from managing products', function () {
+        $product = Product::factory()->create(['organization_id' => $this->organization->id]);
+
+        expect($this->member->can('viewAny', Product::class))->toBeFalse()
+            ->and($this->member->can('create', Product::class))->toBeFalse()
+            ->and($this->member->can('delete', $product))->toBeFalse();
     });
 });
 

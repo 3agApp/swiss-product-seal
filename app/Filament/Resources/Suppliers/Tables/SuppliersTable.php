@@ -42,10 +42,6 @@ class SuppliersTable
                 TextColumn::make('products_count')
                     ->counts('products')
                     ->label('Products'),
-                TextColumn::make('kontor_id')
-                    ->label('Kontor ID')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
