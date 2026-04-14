@@ -41,11 +41,6 @@ class Organization extends Model implements HasCurrentTenantLabel
         return $this->hasMany(Product::class);
     }
 
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class);
-    }
-
     public function productSafetyEntries(): HasMany
     {
         return $this->hasMany(ProductSafetyEntry::class);

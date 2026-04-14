@@ -7,7 +7,6 @@ use App\Enums\ProductStatus;
 use App\Enums\Role;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Document;
 use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
@@ -17,7 +16,6 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -160,39 +158,6 @@ class DatabaseSeeder extends Seeder
                     ...$productData['safety_entry'],
                 ]);
             }
-
-            collect($productData['documents'])->each(function (array $documentData) use ($organization, $product): void {
-                $versionGroupUuid = (string) Str::uuid();
-
-                $document = Document::query()->create([
-                    'organization_id' => $organization->id,
-                    'product_id' => $product->id,
-                    'type' => $documentData['type'],
-                    'version_group_uuid' => $versionGroupUuid,
-                    'version' => $documentData['version'] ?? 1,
-                    'expiry_date' => $documentData['expiry_date'] ?? null,
-                    'review_comment' => $documentData['review_comment'] ?? null,
-                    'is_current' => $documentData['is_current'] ?? true,
-                    'public_download' => $documentData['public_download'] ?? false,
-                ]);
-
-                if (isset($documentData['replacement'])) {
-                    Document::query()->create([
-                        'organization_id' => $organization->id,
-                        'product_id' => $product->id,
-                        'type' => $documentData['type'],
-                        'version_group_uuid' => $document->version_group_uuid,
-                        'replaces_document_id' => $document->id,
-                        'version' => $documentData['replacement']['version'],
-                        'expiry_date' => $documentData['replacement']['expiry_date'] ?? null,
-                        'review_comment' => $documentData['replacement']['review_comment'] ?? null,
-                        'is_current' => true,
-                        'public_download' => $documentData['replacement']['public_download'] ?? false,
-                    ]);
-
-                    $document->update(['is_current' => false]);
-                }
-            });
         });
     }
 
