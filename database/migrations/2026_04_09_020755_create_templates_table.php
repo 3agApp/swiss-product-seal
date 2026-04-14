@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Organization::class)->constrained();
             $table->foreignIdFor(Category::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->json('required_document_types');

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Organization::class)->constrained();
             $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete();
             $table->string('type');
             $table->uuid('version_group_uuid');

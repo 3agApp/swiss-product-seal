@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('brands', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Organization::class)->constrained();
             $table->foreignIdFor(Supplier::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
