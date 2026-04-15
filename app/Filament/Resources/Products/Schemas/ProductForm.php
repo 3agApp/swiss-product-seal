@@ -6,6 +6,7 @@ use App\Enums\DocumentType;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Organization;
+use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
 use Filament\Facades\Filament;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -25,6 +27,7 @@ class ProductForm
     {
         return $schema
             ->components([
+                static::getCompletenessSection(),
                 static::getCategorySelectionSection(),
                 static::getTemplateSelectionSection(),
                 static::getProductIdentitySection(),
@@ -37,6 +40,7 @@ class ProductForm
         return Section::make('Category')
             ->description('Choose the catalog category first so template suggestions stay relevant.')
             ->columnSpanFull()
+            ->columns(1)
             ->schema([
                 static::getCategoryField(),
             ]);
@@ -62,7 +66,7 @@ class ProductForm
         return Section::make('Template')
             ->description('Pick the compliance template that applies to the chosen category.')
             ->columnSpanFull()
-            ->columns(2)
+            ->columns(3)
             ->schema([
                 static::getTemplateField(),
                 static::getTemplateRequirementsPlaceholder(),
@@ -75,6 +79,7 @@ class ProductForm
             ->label('Template')
             ->options(fn (Get $get): array => static::getTemplateOptions($get('category_id')))
             ->helperText('Templates are filtered to the selected category.')
+            ->columnSpan(2)
             ->native(false)
             ->preload()
             ->searchable()
@@ -138,10 +143,11 @@ class ProductForm
         return Section::make('Product details')
             ->description('Capture the product name and internal identifiers.')
             ->columnSpanFull()
-            ->columns(2)
+            ->columns(3)
             ->schema([
                 TextInput::make('name')
                     ->required()
+                    ->columnSpanFull()
                     ->maxLength(255),
                 TextInput::make('internal_article_number')
                     ->label('Internal article number')
@@ -155,6 +161,33 @@ class ProductForm
                 TextInput::make('ean')
                     ->label('EAN')
                     ->maxLength(255),
+            ]);
+    }
+
+    public static function getCompletenessSection(): Section
+    {
+        return Section::make('Compliance progress')
+            ->description('Review completion at a glance before you move on to documents and safety content.')
+            ->columnSpanFull()
+            ->columns(3)
+            ->visibleOn('edit')
+            ->schema([
+                Callout::make(fn (?Product $record): string => static::getCompletenessScoreHeading($record))
+                    ->description('Completeness score')
+                    ->status(fn (?Product $record): string => static::getCompletenessStatus($record))
+                    ->columnSpan(1),
+                Callout::make('Coverage')
+                    ->description(fn (?Product $record): string => $record instanceof Product
+                        ? $record->completenessSummary()
+                        : 'No required documents or safety fields.')
+                    ->info()
+                    ->columnSpan(1),
+                Callout::make('Missing requirements')
+                    ->columnSpan(2)
+                    ->description(fn (?Product $record): string => $record instanceof Product
+                        ? $record->missingRequirementsSummary()
+                        : 'All required documents and safety fields are present.')
+                    ->status(fn (?Product $record): string => static::getMissingRequirementsStatus($record)),
             ]);
     }
 
@@ -302,6 +335,37 @@ class ProductForm
         $dataFieldSummary = filled($dataFields) ? $dataFields : 'No required data fields';
 
         return "Required documents: {$documentSummary}. Required data fields: {$dataFieldSummary}.";
+    }
+
+    private static function getCompletenessScoreHeading(?Product $record): string
+    {
+        $score = $record instanceof Product ? (float) $record->completeness_score : 0.0;
+
+        return number_format($score, 0).'% complete';
+    }
+
+    private static function getCompletenessStatus(?Product $record): string
+    {
+        $score = $record instanceof Product ? (float) $record->completeness_score : 0.0;
+
+        return match (true) {
+            $score >= 100 => 'success',
+            $score >= 50 => 'warning',
+            default => 'danger',
+        };
+    }
+
+    private static function getMissingRequirementsStatus(?Product $record): string
+    {
+        if (! $record instanceof Product) {
+            return 'success';
+        }
+
+        if ($record->requiredComplianceItemCount() > 0 && $record->completedComplianceItemCount() === $record->requiredComplianceItemCount()) {
+            return 'success';
+        }
+
+        return 'warning';
     }
 
     /**
