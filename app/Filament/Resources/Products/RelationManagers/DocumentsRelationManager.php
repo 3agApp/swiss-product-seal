@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentsRelationManager extends RelationManager
 {
+    protected static bool $isLazy = false;
+
     protected static string $relationship = 'documents';
 
     protected static ?string $title = 'Documents';

@@ -11,36 +11,40 @@ class ProductPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
     public function view(User $user, Product $product): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
     public function update(User $user, Product $product): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
     public function delete(User $user, Product $product): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
     public function deleteAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canAccessProductRecords($user);
     }
 
-    private function canManageOrganization(User $user): bool
+    private function canAccessProductRecords(User $user): bool
     {
+        if ($user->isSystemAdmin()) {
+            return true;
+        }
+
         $tenant = Filament::getTenant();
 
         if (! $tenant instanceof Organization) {

@@ -256,11 +256,54 @@ class Product extends Model
             return false;
         }
 
-        $this->forceFill([
-            'status' => ProductStatus::UnderReview,
-        ])->save();
+        return $this->transitionToStatus(ProductStatus::UnderReview, [
+            ProductStatus::Open,
+            ProductStatus::InProgress,
+            ProductStatus::Rejected,
+            ProductStatus::ClarificationNeeded,
+        ]);
+    }
 
-        return true;
+    public function canBeApprovedByAdmin(): bool
+    {
+        return $this->status === ProductStatus::UnderReview;
+    }
+
+    public function approveByAdmin(): bool
+    {
+        if (! $this->canBeApprovedByAdmin()) {
+            return false;
+        }
+
+        return $this->transitionToStatus(ProductStatus::Approved, [ProductStatus::UnderReview]);
+    }
+
+    public function canBeRejectedByAdmin(): bool
+    {
+        return $this->status === ProductStatus::UnderReview;
+    }
+
+    public function rejectByAdmin(): bool
+    {
+        if (! $this->canBeRejectedByAdmin()) {
+            return false;
+        }
+
+        return $this->transitionToStatus(ProductStatus::Rejected, [ProductStatus::UnderReview]);
+    }
+
+    public function canHaveClarificationRequestedByAdmin(): bool
+    {
+        return $this->status === ProductStatus::UnderReview;
+    }
+
+    public function requestClarificationByAdmin(): bool
+    {
+        if (! $this->canHaveClarificationRequestedByAdmin()) {
+            return false;
+        }
+
+        return $this->transitionToStatus(ProductStatus::ClarificationNeeded, [ProductStatus::UnderReview]);
     }
 
     public function completenessSummary(): string
@@ -363,5 +406,21 @@ class Product extends Model
         }
 
         return $this->documents()->get();
+    }
+
+    /**
+     * @param  array<int, ProductStatus>  $allowedFrom
+     */
+    private function transitionToStatus(ProductStatus $status, array $allowedFrom): bool
+    {
+        if (! in_array($this->status, $allowedFrom, true)) {
+            return false;
+        }
+
+        $this->forceFill([
+            'status' => $status,
+        ])->save();
+
+        return true;
     }
 }

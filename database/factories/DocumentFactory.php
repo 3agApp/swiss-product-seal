@@ -42,7 +42,7 @@ class DocumentFactory extends Factory
      */
     public function withFiles(array $files): static
     {
-        return $this->afterCreating(function (Document $document): void {
+        return $this->afterCreating(function (Document $document) use ($files): void {
             foreach ($files as $file) {
                 $document
                     ->addMedia(UploadedFile::fake()->create(

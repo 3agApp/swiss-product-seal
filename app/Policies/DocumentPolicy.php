@@ -11,7 +11,7 @@ class DocumentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDocuments($user);
     }
 
     public function view(User $user, Document $document): bool
@@ -21,7 +21,7 @@ class DocumentPolicy
 
     public function create(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDocuments($user);
     }
 
     public function update(User $user, Document $document): bool
@@ -46,11 +46,15 @@ class DocumentPolicy
 
     public function deleteAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDocuments($user);
     }
 
     private function canManageDocument(User $user, Document $document): bool
     {
+        if ($user->isSystemAdmin()) {
+            return true;
+        }
+
         $tenant = Filament::getTenant();
 
         if (! $tenant instanceof Organization) {
@@ -64,8 +68,12 @@ class DocumentPolicy
         return (int) $document->organization_id === (int) $tenant->getKey();
     }
 
-    private function canManageOrganization(User $user): bool
+    private function canManageDocuments(User $user): bool
     {
+        if ($user->isSystemAdmin()) {
+            return true;
+        }
+
         $tenant = Filament::getTenant();
 
         if (! $tenant instanceof Organization) {
