@@ -45,9 +45,19 @@ it('does not expose a status field on the create product page', function () {
         ->assertFormFieldDoesNotExist('status');
 });
 
+it('does not show a selected category summary on the create product page', function () {
+    Livewire::test(CreateProduct::class)
+        ->assertDontSee('Selected category');
+});
+
 it('does not expose a status field on the edit product page', function () {
     Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
         ->assertFormFieldDoesNotExist('status');
+});
+
+it('does not show a selected category summary on the edit product page', function () {
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->assertDontSee('Selected category');
 });
 
 it('ignores dashboard attempts to change product status when editing', function () {

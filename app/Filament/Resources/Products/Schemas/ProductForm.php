@@ -39,7 +39,6 @@ class ProductForm
             ->columnSpanFull()
             ->schema([
                 static::getCategoryField(),
-                static::getSelectedCategoryPlaceholder(),
             ]);
     }
 
@@ -56,13 +55,6 @@ class ProductForm
             ->afterStateUpdated(function (Set $set): void {
                 $set('template_id', null);
             });
-    }
-
-    public static function getSelectedCategoryPlaceholder(): Placeholder
-    {
-        return Placeholder::make('selected_category_summary')
-            ->label('Selected category')
-            ->content(fn (Get $get): string => static::getCategorySummary($get('category_id')));
     }
 
     public static function getTemplateSelectionSection(): Section
@@ -310,29 +302,6 @@ class ProductForm
         $dataFieldSummary = filled($dataFields) ? $dataFields : 'No required data fields';
 
         return "Required documents: {$documentSummary}. Required data fields: {$dataFieldSummary}.";
-    }
-
-    private static function getCategorySummary(mixed $categoryId): string
-    {
-        if (blank($categoryId)) {
-            return 'Choose a category to preview its description and available templates.';
-        }
-
-        $category = static::getCategories()->firstWhere('id', (int) $categoryId);
-
-        if (! $category instanceof Category) {
-            return 'Choose a valid category for this organization.';
-        }
-
-        $description = filled($category->description)
-            ? $category->description
-            : 'No description available yet.';
-
-        $templateCount = $category->templates_count === 1
-            ? '1 template available'
-            : "{$category->templates_count} templates available";
-
-        return "{$description} {$templateCount}.";
     }
 
     /**
