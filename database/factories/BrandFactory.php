@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Brand;
+use App\Models\Organization;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -12,14 +13,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class BrandFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'supplier_id' => Supplier::factory(),
+            'organization_id' => Organization::factory(),
+            'supplier_id' => fn (array $attributes): int => Supplier::factory()->create([
+                'organization_id' => $attributes['organization_id'],
+            ])->id,
             'name' => fake()->company(),
         ];
     }

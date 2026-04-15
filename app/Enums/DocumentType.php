@@ -27,11 +27,6 @@ enum DocumentType: string
         };
     }
 
-    /**
-     * Get the compliance weight for this document type.
-     *
-     * High priority = 3, Medium priority = 2, Normal = 1.
-     */
     public function complianceWeight(): int
     {
         return match ($this) {

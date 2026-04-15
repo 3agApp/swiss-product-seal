@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\DocumentType;
 use App\Models\Category;
+use App\Models\Organization;
 use App\Models\Template;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,8 +14,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class TemplateFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -26,16 +25,29 @@ class TemplateFactory extends Factory
 
         shuffle($allTypes);
 
-        $required = array_slice($allTypes, 0, fake()->numberBetween(0, count($allTypes)));
+        $requiredDocumentTypes = array_slice($allTypes, 0, fake()->numberBetween(0, count($allTypes)));
 
-        $allDataFields = ['safety_text', 'warning_text', 'age_grading', 'material_information', 'usage_restrictions', 'safety_instructions', 'additional_notes'];
+        $allDataFields = [
+            'safety_text',
+            'warning_text',
+            'age_grading',
+            'material_information',
+            'usage_restrictions',
+            'safety_instructions',
+            'additional_notes',
+        ];
+
         shuffle($allDataFields);
+
         $requiredDataFields = array_slice($allDataFields, 0, fake()->numberBetween(0, count($allDataFields)));
 
         return [
-            'category_id' => Category::factory(),
+            'organization_id' => Organization::factory(),
+            'category_id' => fn (array $attributes): int => Category::factory()->create([
+                'organization_id' => $attributes['organization_id'],
+            ])->id,
             'name' => fake()->words(3, true),
-            'required_document_types' => $required,
+            'required_document_types' => $requiredDocumentTypes,
             'required_data_fields' => $requiredDataFields,
         ];
     }

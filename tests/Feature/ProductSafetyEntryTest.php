@@ -1,142 +1,166 @@
 <?php
 
+use App\Enums\Role;
+use App\Filament\Resources\Products\Pages\EditProduct;
+use App\Filament\Resources\Products\ProductResource;
+use App\Filament\Resources\Products\RelationManagers\SafetyEntriesRelationManager;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
+use App\Models\Supplier;
+use App\Models\Template;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
-beforeEach(function () {
-    $this->user = User::factory()->create();
-    $this->actingAs($this->user);
+test('product safety entries table has a unique constraint for product', function () {
+    $indexes = collect(Schema::getIndexes('product_safety_entries'));
+
+    expect($indexes->contains(function (array $index): bool {
+        return $index['unique']
+            && $index['columns'] === ['product_id'];
+    }))->toBeTrue();
 });
 
-it('can create a safety entry via factory', function () {
-    $product = Product::factory()->create();
-    $entry = ProductSafetyEntry::factory()->create(['product_id' => $product->id]);
+test('product safety entries inherit the owning product organization when created through the relation', function () {
+    $organization = Organization::factory()->create();
+    $supplier = Supplier::factory()->create([
+        'organization_id' => $organization->id,
+    ]);
+    $brand = Brand::factory()->create([
+        'organization_id' => $organization->id,
+        'supplier_id' => $supplier->id,
+    ]);
+    $product = Product::factory()->create([
+        'organization_id' => $organization->id,
+        'supplier_id' => $supplier->id,
+        'brand_id' => $brand->id,
+    ]);
 
-    expect($entry)
-        ->product_id->toBe($product->id)
-        ->and($entry->product->id)->toBe($product->id);
+    $entry = ProductSafetyEntry::query()->create([
+        'product_id' => $product->id,
+        'warning_text' => 'Adult supervision required.',
+    ]);
+
+    expect($entry->organization_id)->toBe($organization->id)
+        ->and($entry->product->is($product))->toBeTrue();
 });
 
-it('belongs to a product', function () {
-    $product = Product::factory()->create();
-    $entry = ProductSafetyEntry::factory()->create(['product_id' => $product->id]);
+test('product resource registers the safety information relation manager', function () {
+    $organization = Organization::factory()->create(['slug' => 'acme-corp']);
+    $owner = User::factory()->create();
+    $organization->members()->attach($owner, ['role' => Role::Owner->value]);
 
-    expect($entry->product)->toBeInstanceOf(Product::class);
+    $supplier = Supplier::factory()->create([
+        'organization_id' => $organization->id,
+    ]);
+    $brand = Brand::factory()->create([
+        'organization_id' => $organization->id,
+        'supplier_id' => $supplier->id,
+    ]);
+    $product = Product::factory()->create([
+        'organization_id' => $organization->id,
+        'supplier_id' => $supplier->id,
+        'brand_id' => $brand->id,
+    ]);
+
+    ProductSafetyEntry::factory()->create([
+        'organization_id' => $organization->id,
+        'product_id' => $product->id,
+        'safety_text' => 'Keep away from open flames.',
+    ]);
+
+    $relations = ProductResource::getRelations();
+    $safetyEntries = $product->safetyEntries();
+
+    expect($relations)->toHaveKey('safetyEntries', SafetyEntriesRelationManager::class)
+        ->and($safetyEntries)->toBeInstanceOf(HasMany::class)
+        ->and($safetyEntries->getRelated())->toBeInstanceOf(ProductSafetyEntry::class)
+        ->and(SafetyEntriesRelationManager::getTitle($product, EditProduct::class))->toBe('Safety information')
+        ->and(SafetyEntriesRelationManager::canViewForRecord($product, EditProduct::class))->toBeTrue();
 });
 
-it('has nullable safety fields', function () {
-    $product = Product::factory()->create();
+test('product safety entries report missing template-required fields', function () {
+    $organization = Organization::factory()->create();
+    $category = Category::factory()->create([
+        'organization_id' => $organization->id,
+    ]);
+    $template = Template::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'required_data_fields' => ['safety_text', 'warning_text', 'age_grading'],
+    ]);
+    $product = Product::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'template_id' => $template->id,
+    ]);
+
     $entry = ProductSafetyEntry::factory()->create([
+        'organization_id' => $organization->id,
         'product_id' => $product->id,
-        'safety_text' => null,
+        'safety_text' => 'Keep away from heat sources.',
         'warning_text' => null,
         'age_grading' => null,
-        'material_information' => null,
-        'usage_restrictions' => null,
-        'safety_instructions' => null,
-        'additional_notes' => null,
     ]);
 
-    expect($entry->safety_text)->toBeNull()
-        ->and($entry->warning_text)->toBeNull()
-        ->and($entry->age_grading)->toBeNull()
-        ->and($entry->material_information)->toBeNull()
-        ->and($entry->usage_restrictions)->toBeNull()
-        ->and($entry->safety_instructions)->toBeNull()
-        ->and($entry->additional_notes)->toBeNull();
+    expect($entry->templateCompletionStatus())->toBe('Incomplete')
+        ->and($entry->requiredTemplateFieldCount())->toBe(3)
+        ->and($entry->completedRequiredTemplateFieldCount())->toBe(1)
+        ->and($entry->missingRequiredTemplateFields())->toBe(['Warning text', 'Age grading'])
+        ->and($entry->templateCompletionSummary())->toBe('1 of 3 required safety fields are filled.')
+        ->and($entry->missingRequiredTemplateFieldsSummary())->toBe('Warning text, Age grading');
 });
 
-it('cascades delete when product is deleted', function () {
-    $product = Product::factory()->create();
-    ProductSafetyEntry::factory()->create(['product_id' => $product->id]);
+test('product safety entries report when the template has no required safety fields', function () {
+    $organization = Organization::factory()->create();
+    $category = Category::factory()->create([
+        'organization_id' => $organization->id,
+    ]);
+    $template = Template::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'required_data_fields' => [],
+    ]);
+    $product = Product::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'template_id' => $template->id,
+    ]);
 
-    $product->delete();
-
-    $this->assertDatabaseMissing('product_safety_entries', ['product_id' => $product->id]);
-});
-
-it('creates a safety entry via the update endpoint', function () {
-    $product = Product::factory()->create();
-
-    $this->putJson(route('products.safety-entry.update', $product), [
-        'safety_text' => 'Keep away from fire',
-        'warning_text' => 'Choking hazard',
-    ])->assertSuccessful();
-
-    $this->assertDatabaseHas('product_safety_entries', [
+    $entry = ProductSafetyEntry::factory()->create([
+        'organization_id' => $organization->id,
         'product_id' => $product->id,
-        'safety_text' => 'Keep away from fire',
-        'warning_text' => 'Choking hazard',
-    ]);
-});
-
-it('updates an existing safety entry via the update endpoint', function () {
-    $product = Product::factory()->create();
-    ProductSafetyEntry::factory()->create([
-        'product_id' => $product->id,
-        'safety_text' => 'Old text',
     ]);
 
-    $this->putJson(route('products.safety-entry.update', $product), [
-        'safety_text' => 'New text',
-        'warning_text' => 'Updated warning',
-    ])->assertSuccessful();
-
-    expect($product->safetyEntry->fresh())
-        ->safety_text->toBe('New text')
-        ->warning_text->toBe('Updated warning');
+    expect($entry->templateCompletionStatus())->toBe('Not required')
+        ->and($entry->requiredTemplateFieldCount())->toBe(0)
+        ->and($entry->completedRequiredTemplateFieldCount())->toBe(0)
+        ->and($entry->requiredTemplateFieldsSummary())->toBe('No safety fields required by the assigned template.')
+        ->and($entry->missingRequiredTemplateFieldsSummary())->toBe('Nothing missing.');
 });
 
-it('validates max length on safety entry fields', function () {
-    $product = Product::factory()->create();
-
-    $this->putJson(route('products.safety-entry.update', $product), [
-        'safety_text' => str_repeat('x', 5001),
-    ])->assertUnprocessable()
-        ->assertJsonValidationErrors(['safety_text']);
-});
-
-it('allows all fields to be null', function () {
-    $product = Product::factory()->create();
-
-    $this->putJson(route('products.safety-entry.update', $product), [
-        'safety_text' => null,
-        'warning_text' => null,
-        'age_grading' => null,
-        'material_information' => null,
-        'usage_restrictions' => null,
-        'safety_instructions' => null,
-        'additional_notes' => null,
-    ])->assertSuccessful();
-
-    $this->assertDatabaseHas('product_safety_entries', [
-        'product_id' => $product->id,
-        'safety_text' => null,
+test('product safety entry form helper text marks template-required fields without making others required', function () {
+    $organization = Organization::factory()->create();
+    $category = Category::factory()->create([
+        'organization_id' => $organization->id,
     ]);
-});
-
-it('redirects guests from safety entry endpoint', function () {
-    auth()->logout();
-
-    $product = Product::factory()->create();
-
-    $this->putJson(route('products.safety-entry.update', $product), [
-        'safety_text' => 'test',
-    ])->assertUnauthorized();
-});
-
-it('includes safety entry in product edit page', function () {
-    $product = Product::factory()->create();
-    ProductSafetyEntry::factory()->create([
-        'product_id' => $product->id,
-        'safety_text' => 'Important safety info',
+    $template = Template::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'required_data_fields' => ['warning_text', 'safety_instructions'],
+    ]);
+    $product = Product::factory()->create([
+        'organization_id' => $organization->id,
+        'category_id' => $category->id,
+        'template_id' => $template->id,
     ]);
 
-    $this->get(route('products.edit', $product))
-        ->assertSuccessful()
-        ->assertInertia(fn ($page) => $page
-            ->component('products/edit')
-            ->where('product.safety_entry.safety_text', 'Important safety info')
-        );
+    expect(ProductSafetyEntry::templateFieldHelperTextForProduct($product, 'warning_text'))->toBe('Required by template')
+        ->and(ProductSafetyEntry::templateFieldHelperTextForProduct($product, 'safety_instructions'))->toBe('Required by template')
+        ->and(ProductSafetyEntry::templateFieldHelperTextForProduct($product, 'safety_text'))->toBeNull()
+        ->and(ProductSafetyEntry::isTemplateFieldRequiredForProduct($product, 'warning_text'))->toBeTrue()
+        ->and(ProductSafetyEntry::isTemplateFieldRequiredForProduct($product, 'safety_text'))->toBeFalse();
 });

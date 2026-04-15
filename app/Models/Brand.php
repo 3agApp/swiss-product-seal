@@ -9,22 +9,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['supplier_id', 'name'])]
+#[Fillable(['organization_id', 'supplier_id', 'name'])]
 class Brand extends Model
 {
     /** @use HasFactory<BrandFactory> */
     use HasFactory;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
+            'organization_id' => 'integer',
             'supplier_id' => 'integer',
         ];
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function supplier(): BelongsTo

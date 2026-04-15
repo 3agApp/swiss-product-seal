@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -12,14 +13,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ProductSafetyEntryFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'product_id' => Product::factory(),
+            'organization_id' => Organization::factory(),
+            'product_id' => fn (array $attributes): int => Product::factory()->create([
+                'organization_id' => $attributes['organization_id'],
+            ])->id,
             'safety_text' => fake()->optional()->sentence(),
             'warning_text' => fake()->optional()->sentence(),
             'age_grading' => fake()->optional()->word(),

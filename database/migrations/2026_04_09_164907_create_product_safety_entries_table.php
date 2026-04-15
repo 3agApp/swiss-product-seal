@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Organization;
 use App\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -7,14 +8,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('product_safety_entries', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Organization::class)->constrained();
+            $table->foreignIdFor(Product::class)->unique()->constrained()->cascadeOnDelete();
             $table->text('safety_text')->nullable();
             $table->text('warning_text')->nullable();
             $table->text('age_grading')->nullable();
@@ -26,9 +25,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('product_safety_entries');

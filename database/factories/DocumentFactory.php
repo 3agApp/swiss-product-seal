@@ -6,6 +6,7 @@ use App\Enums\DocumentType;
 use App\Models\Document;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\UploadedFile;
 
 /**
  * @extends Factory<Document>
@@ -13,38 +14,44 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class DocumentFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
+            'organization_id' => fn (array $attributes): int => Product::query()->findOrFail($attributes['product_id'])->organization_id,
             'product_id' => Product::factory(),
             'type' => fake()->randomElement(DocumentType::cases()),
-            'version' => 1,
-            'expiry_date' => fake()->optional()->date('Y-m-d'),
-            'review_comment' => fake()->optional()->sentence(),
-            'is_current' => true,
-            'public_download' => false,
         ];
     }
 
-    public function publicDownload(): static
-    {
-        return $this->state(fn (): array => [
-            'public_download' => true,
-        ]);
+    public function withFile(
+        string $name = 'document.pdf',
+        int $sizeKilobytes = 128,
+        string $mimeType = 'application/pdf',
+    ): static {
+        return $this->withFiles([[
+            'name' => $name,
+            'sizeKilobytes' => $sizeKilobytes,
+            'mimeType' => $mimeType,
+        ]]);
     }
 
-    public function replacementOf(Document $document): static
+    /**
+     * @param  array<int, array{name: string, sizeKilobytes?: int, mimeType?: string}>  $files
+     */
+    public function withFiles(array $files): static
     {
-        return $this->state(fn (): array => [
-            'product_id' => $document->product_id,
-            'type' => $document->type,
-            'version_group_uuid' => $document->version_group_uuid,
-            'replaces_document_id' => $document->id,
-            'version' => $document->version + 1,
-        ]);
+        return $this->afterCreating(function (Document $document) use ($files): void {
+            foreach ($files as $file) {
+                $document
+                    ->addMedia(UploadedFile::fake()->create(
+                        $file['name'],
+                        $file['sizeKilobytes'] ?? 128,
+                        $file['mimeType'] ?? 'application/pdf',
+                    ))
+                    ->toMediaCollection(Document::FILE_COLLECTION);
+            }
+        });
     }
 }

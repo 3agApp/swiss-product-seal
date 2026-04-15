@@ -1,9 +1,11 @@
 <?php
 
 use App\Providers\AppServiceProvider;
-use App\Providers\FortifyServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\Filament\DashboardPanelProvider;
 
 return [
     AppServiceProvider::class,
-    FortifyServiceProvider::class,
+    AdminPanelProvider::class,
+    DashboardPanelProvider::class,
 ];
