@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->brandName(config('app.name'))
             ->login()
             ->databaseNotifications()
             ->colors([

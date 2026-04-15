@@ -36,6 +36,7 @@ class DashboardPanelProvider extends PanelProvider
             ->default()
             ->id('dashboard')
             ->path('dashboard')
+            ->brandName(config('app.name'))
             ->login()
             ->registration(Register::class)
             ->emailVerification()
