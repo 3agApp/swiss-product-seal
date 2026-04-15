@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
-#[Fillable(['organization_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'completeness_score', 'seal_status_override', 'source_last_sync_at'])]
+#[Fillable(['organization_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'completeness_score', 'source_last_sync_at'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -98,7 +98,6 @@ class Product extends Model
             'source_last_sync_at' => 'datetime',
             'status' => ProductStatus::class,
             'completeness_score' => 'decimal:2',
-            'seal_status_override' => SealStatus::class,
         ];
     }
 
@@ -260,10 +259,6 @@ class Product extends Model
 
     public function sealStatus(): SealStatus
     {
-        if ($this->seal_status_override !== null) {
-            return $this->seal_status_override;
-        }
-
         if ($this->status === ProductStatus::Approved) {
             return SealStatus::Verified;
         }

@@ -147,7 +147,6 @@ class DatabaseSeeder extends Seeder
                 'template_id' => $template->id,
                 'status' => $productData['status'],
                 'completeness_score' => $productData['completeness_score'],
-                'seal_status_override' => $productData['seal_status_override'] ?? null,
                 'source_last_sync_at' => $productData['source_last_sync_at'],
             ]);
 
