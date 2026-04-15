@@ -13,10 +13,7 @@ use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
-
-uses(RefreshDatabase::class);
 
 test('product safety entries table has a unique constraint for product', function () {
     $indexes = collect(Schema::getIndexes('product_safety_entries'));

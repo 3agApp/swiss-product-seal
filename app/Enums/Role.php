@@ -9,14 +9,12 @@ enum Role: string implements HasColor, HasLabel
 {
     case Owner = 'owner';
     case Admin = 'admin';
-    case Member = 'member';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Owner => 'Owner',
             self::Admin => 'Admin',
-            self::Member => 'Member',
         };
     }
 
@@ -25,18 +23,17 @@ enum Role: string implements HasColor, HasLabel
         return match ($this) {
             self::Owner => 'danger',
             self::Admin => 'warning',
-            self::Member => 'primary',
         };
     }
 
     public function canManageMembers(): bool
     {
-        return in_array($this, [self::Owner, self::Admin], true);
+        return true;
     }
 
     public function canManageOrganization(): bool
     {
-        return in_array($this, [self::Owner, self::Admin], true);
+        return true;
     }
 
     public function canDeleteOrganization(): bool

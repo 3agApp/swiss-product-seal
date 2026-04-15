@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\DocumentType;
 use App\Enums\ProductStatus;
 use App\Enums\SealStatus;
+use App\Notifications\ProductStatusChanged;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
-#[Fillable(['organization_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'completeness_score', 'source_last_sync_at'])]
+#[Fillable(['organization_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'completeness_score', 'last_reviewed_at', 'source_last_sync_at'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -107,6 +108,7 @@ class Product extends Model
             'category_id' => 'integer',
             'template_id' => 'integer',
             'source_last_sync_at' => 'datetime',
+            'last_reviewed_at' => 'datetime',
             'status' => ProductStatus::class,
             'completeness_score' => 'decimal:2',
         ];
@@ -246,8 +248,21 @@ class Product extends Model
             ? $this->status
             : ProductStatus::tryFrom((string) $this->status);
 
-        return $this->calculateCompletenessScore() >= 100
-            && ! in_array($status, [ProductStatus::UnderReview, ProductStatus::Approved], true);
+        if ($this->calculateCompletenessScore() < 100) {
+            return false;
+        }
+
+        if (in_array($status, [ProductStatus::UnderReview, ProductStatus::Approved], true)) {
+            return false;
+        }
+
+        if (in_array($status, [ProductStatus::Rejected, ProductStatus::ClarificationNeeded], true)
+            && $this->last_reviewed_at
+            && $this->updated_at <= $this->last_reviewed_at) {
+            return false;
+        }
+
+        return true;
     }
 
     public function submitForReview(): bool
@@ -417,10 +432,34 @@ class Product extends Model
             return false;
         }
 
-        $this->forceFill([
-            'status' => $status,
-        ])->save();
+        $extraData = ['status' => $status];
+
+        if (in_array($status, [ProductStatus::Approved, ProductStatus::Rejected, ProductStatus::ClarificationNeeded], true)) {
+            $extraData['last_reviewed_at'] = now();
+        }
+
+        $this->forceFill($extraData)->save();
+
+        $this->notifyStatusChange($status);
 
         return true;
+    }
+
+    private function notifyStatusChange(ProductStatus $status): void
+    {
+        $notification = new ProductStatusChanged($this, $status);
+
+        if ($status === ProductStatus::UnderReview) {
+            $admins = User::query()
+                ->whereIn('email', config('admin.allowed_emails', []))
+                ->get();
+
+            $admins->each->notify($notification);
+        } else {
+            $this->organization
+                ->members()
+                ->get()
+                ->each->notify($notification);
+        }
     }
 }

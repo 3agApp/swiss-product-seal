@@ -6,10 +6,7 @@ use App\Models\Invitation;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('detects pending expired and accepted invitations', function () {
     $pending = Invitation::factory()->create();

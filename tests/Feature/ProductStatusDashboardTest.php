@@ -16,10 +16,7 @@ use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->organization = Organization::factory()->create();

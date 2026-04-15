@@ -5,10 +5,7 @@ use App\Filament\Pages\Tenancy\EditOrganizationProfile;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('returns a users organizations as available tenants', function () {
     $organization = Organization::factory()->create();

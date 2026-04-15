@@ -24,7 +24,7 @@ class InvitationFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'email' => fake()->unique()->safeEmail(),
-            'role' => Role::Member,
+            'role' => Role::Admin,
             'token' => Str::random(64),
             'expires_at' => now()->addHours(48),
             'invited_by' => User::factory(),

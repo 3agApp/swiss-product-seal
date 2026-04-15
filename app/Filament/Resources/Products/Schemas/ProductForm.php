@@ -152,7 +152,13 @@ class ProductForm
                     ->maxLength(255),
                 TextInput::make('internal_article_number')
                     ->label('Internal article number')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(
+                        table: Product::class,
+                        column: 'internal_article_number',
+                        ignoreRecord: true,
+                        modifyRuleUsing: fn ($rule) => $rule->where('organization_id', static::getTenant()?->id),
+                    ),
                 TextInput::make('supplier_article_number')
                     ->label('Supplier article number')
                     ->maxLength(255),
@@ -161,7 +167,13 @@ class ProductForm
                     ->maxLength(255),
                 TextInput::make('ean')
                     ->label('EAN')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(
+                        table: Product::class,
+                        column: 'ean',
+                        ignoreRecord: true,
+                        modifyRuleUsing: fn ($rule) => $rule->where('organization_id', static::getTenant()?->id),
+                    ),
             ]);
     }
 
@@ -269,7 +281,14 @@ class ProductForm
             ->whereBelongsTo($tenant)
             ->where('category_id', $categoryId)
             ->orderBy('name')
-            ->pluck('name', 'id')
+            ->get()
+            ->mapWithKeys(function (Template $template): array {
+                $docCount = count($template->required_document_types ?? []);
+                $fieldCount = count($template->required_data_fields ?? []);
+                $label = "{$template->name} ({$docCount} doc".($docCount !== 1 ? 's' : '').", {$fieldCount} field".($fieldCount !== 1 ? 's' : '').')';
+
+                return [$template->getKey() => $label];
+            })
             ->all();
     }
 

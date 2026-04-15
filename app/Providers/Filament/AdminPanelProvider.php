@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Categories\Resources\Templates\TemplateResource;
 use App\Filament\Resources\Products\AdminProductResource;
+use App\Filament\Widgets\AdminReviewStatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Slate,
             ])
@@ -48,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 AccountWidget::class,
+                AdminReviewStatsOverview::class,
             ])
             ->middleware([
                 EncryptCookies::class,

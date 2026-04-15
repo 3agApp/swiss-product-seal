@@ -10,15 +10,11 @@ use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->organization = Organization::factory()->create();
     $this->owner = User::factory()->create();
     $this->admin = User::factory()->create();
-    $this->member = User::factory()->create();
     $this->outsider = User::factory()->create();
     $this->systemAdmin = User::factory()->create(['email' => 'system-admin@example.com']);
 
@@ -26,7 +22,6 @@ beforeEach(function () {
 
     $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
     $this->organization->members()->attach($this->admin, ['role' => Role::Admin->value]);
-    $this->organization->members()->attach($this->member, ['role' => Role::Member->value]);
 
     $this->actingAs($this->owner);
 
@@ -41,7 +36,7 @@ describe('OrganizationPolicy', function () {
 
     it('allows members to view their organization', function () {
         expect($this->owner->can('view', $this->organization))->toBeTrue()
-            ->and($this->member->can('view', $this->organization))->toBeTrue();
+            ->and($this->admin->can('view', $this->organization))->toBeTrue();
     });
 
     it('prevents outsiders from viewing an organization', function () {
@@ -50,8 +45,7 @@ describe('OrganizationPolicy', function () {
 
     it('allows owner and admin to update organization', function () {
         expect($this->owner->can('update', $this->organization))->toBeTrue()
-            ->and($this->admin->can('update', $this->organization))->toBeTrue()
-            ->and($this->member->can('update', $this->organization))->toBeFalse();
+            ->and($this->admin->can('update', $this->organization))->toBeTrue();
     });
 });
 
@@ -66,13 +60,6 @@ describe('InvitationPolicy', function () {
             ->and($this->admin->can('create', Invitation::class))->toBeTrue();
     });
 
-    it('prevents members from managing invitations', function () {
-        $invitation = Invitation::factory()->create(['organization_id' => $this->organization->id]);
-
-        expect($this->member->can('viewAny', Invitation::class))->toBeFalse()
-            ->and($this->member->can('create', Invitation::class))->toBeFalse()
-            ->and($this->member->can('delete', $invitation))->toBeFalse();
-    });
 });
 
 describe('SupplierPolicy', function () {
@@ -87,13 +74,6 @@ describe('SupplierPolicy', function () {
             ->and($this->admin->can('delete', $supplier))->toBeTrue();
     });
 
-    it('prevents members from managing suppliers', function () {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
-
-        expect($this->member->can('viewAny', Supplier::class))->toBeFalse()
-            ->and($this->member->can('create', Supplier::class))->toBeFalse()
-            ->and($this->member->can('delete', $supplier))->toBeFalse();
-    });
 });
 
 describe('BrandPolicy', function () {
@@ -112,17 +92,6 @@ describe('BrandPolicy', function () {
             ->and($this->admin->can('delete', $brand))->toBeTrue();
     });
 
-    it('prevents members from managing brands', function () {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
-        $brand = Brand::factory()->create([
-            'organization_id' => $this->organization->id,
-            'supplier_id' => $supplier->id,
-        ]);
-
-        expect($this->member->can('viewAny', Brand::class))->toBeFalse()
-            ->and($this->member->can('create', Brand::class))->toBeFalse()
-            ->and($this->member->can('delete', $brand))->toBeFalse();
-    });
 });
 
 describe('ProductPolicy', function () {
@@ -137,13 +106,6 @@ describe('ProductPolicy', function () {
             ->and($this->admin->can('delete', $product))->toBeTrue();
     });
 
-    it('prevents members from managing products', function () {
-        $product = Product::factory()->create(['organization_id' => $this->organization->id]);
-
-        expect($this->member->can('viewAny', Product::class))->toBeFalse()
-            ->and($this->member->can('create', Product::class))->toBeFalse()
-            ->and($this->member->can('delete', $product))->toBeFalse();
-    });
 });
 
 describe('CategoryPolicy', function () {
@@ -159,9 +121,7 @@ describe('CategoryPolicy', function () {
         $category = Category::factory()->create(['organization_id' => $this->organization->id]);
 
         expect($this->owner->can('viewAny', Category::class))->toBeFalse()
-            ->and($this->admin->can('create', Category::class))->toBeFalse()
-            ->and($this->member->can('create', Category::class))->toBeFalse()
-            ->and($this->member->can('delete', $category))->toBeFalse();
+            ->and($this->admin->can('create', Category::class))->toBeFalse();
     });
 });
 
@@ -186,22 +146,17 @@ describe('TemplatePolicy', function () {
         ]);
 
         expect($this->owner->can('viewAny', Template::class))->toBeFalse()
-            ->and($this->admin->can('create', Template::class))->toBeFalse()
-            ->and($this->member->can('create', Template::class))->toBeFalse()
-            ->and($this->member->can('delete', $template))->toBeFalse();
+            ->and($this->admin->can('create', Template::class))->toBeFalse();
     });
 });
 
 describe('Role enum', function () {
-    it('exposes the CPM member permissions', function () {
+    it('exposes the role permissions', function () {
         expect(Role::Owner->canManageMembers())->toBeTrue()
             ->and(Role::Admin->canManageMembers())->toBeTrue()
-            ->and(Role::Member->canManageMembers())->toBeFalse()
             ->and(Role::Owner->canManageOrganization())->toBeTrue()
             ->and(Role::Admin->canManageOrganization())->toBeTrue()
-            ->and(Role::Member->canManageOrganization())->toBeFalse()
             ->and(Role::Owner->canDeleteOrganization())->toBeTrue()
-            ->and(Role::Admin->canDeleteOrganization())->toBeFalse()
-            ->and(Role::Member->canDeleteOrganization())->toBeFalse();
+            ->and(Role::Admin->canDeleteOrganization())->toBeFalse();
     });
 });

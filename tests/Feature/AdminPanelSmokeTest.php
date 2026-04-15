@@ -8,9 +8,6 @@ use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 dataset('admin_filament_pages', [
     'admin dashboard' => ['filament.admin.pages.dashboard'],

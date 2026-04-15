@@ -15,9 +15,6 @@ use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->organization = Organization::factory()->create(['slug' => 'acme-corp']);

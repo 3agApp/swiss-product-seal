@@ -38,6 +38,7 @@ class DashboardPanelProvider extends PanelProvider
             ->path('dashboard')
             ->login()
             ->registration(Register::class)
+            ->emailVerification()
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,

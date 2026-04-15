@@ -25,9 +25,9 @@ class InvitationForm
                             ->maxLength(255)
                             ->placeholder('user@example.com'),
                         Select::make('role')
-                            ->options(fn () => collect([Role::Admin, Role::Member])
+                            ->options(fn () => collect([Role::Admin])
                                 ->mapWithKeys(fn (Role $role) => [$role->value => $role->getLabel()]))
-                            ->default(Role::Member->value)
+                            ->default(Role::Admin->value)
                             ->native(false)
                             ->required(),
                     ]),

@@ -4,25 +4,19 @@ use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->organization = Organization::factory()->create();
     $this->owner = User::factory()->create();
     $this->admin = User::factory()->create();
-    $this->member = User::factory()->create();
 
     $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
     $this->organization->members()->attach($this->admin, ['role' => Role::Admin->value]);
-    $this->organization->members()->attach($this->member, ['role' => Role::Member->value]);
 });
 
 it('user can access their organizations', function () {
     expect($this->owner->canAccessTenant($this->organization))->toBeTrue()
-        ->and($this->admin->canAccessTenant($this->organization))->toBeTrue()
-        ->and($this->member->canAccessTenant($this->organization))->toBeTrue();
+        ->and($this->admin->canAccessTenant($this->organization))->toBeTrue();
 });
 
 it('user cannot access organizations they do not belong to', function () {
@@ -42,8 +36,7 @@ it('user can get tenants', function () {
 
 it('user can get their role for an organization', function () {
     expect($this->owner->getRoleForOrganization($this->organization))->toBe(Role::Owner)
-        ->and($this->admin->getRoleForOrganization($this->organization))->toBe(Role::Admin)
-        ->and($this->member->getRoleForOrganization($this->organization))->toBe(Role::Member);
+        ->and($this->admin->getRoleForOrganization($this->organization))->toBe(Role::Admin);
 });
 
 it('user returns null role for non-member organization', function () {

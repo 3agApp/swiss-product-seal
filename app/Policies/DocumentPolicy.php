@@ -61,7 +61,9 @@ class DocumentPolicy
             return false;
         }
 
-        if (! $this->canManageOrganization($user)) {
+        $role = $user->getRoleForOrganization($tenant);
+
+        if (! $role?->canManageOrganization()) {
             return false;
         }
 

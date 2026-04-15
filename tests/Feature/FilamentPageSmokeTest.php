@@ -7,9 +7,6 @@ use App\Models\Organization;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 dataset('tenant_filament_pages', [
     'dashboard' => ['filament.dashboard.pages.dashboard'],

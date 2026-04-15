@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\RecalculateProductCompleteness;
 use Database\Factories\TemplateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,11 +27,7 @@ class Template extends Model
     protected static function booted(): void
     {
         static::saved(function (Template $template): void {
-            $template->products()
-                ->cursor()
-                ->each(function (Product $product): void {
-                    $product->refreshCompletenessScore();
-                });
+            RecalculateProductCompleteness::dispatch($template->getKey());
         });
     }
 

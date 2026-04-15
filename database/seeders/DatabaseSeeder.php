@@ -36,11 +36,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
-        $member = User::factory()->create([
-            'name' => 'Org Member',
-            'email' => 'member@example.com',
-        ]);
-
         $acme = Organization::factory()->create([
             'name' => 'Acme Corp',
             'slug' => 'acme-corp',
@@ -53,7 +48,6 @@ class DatabaseSeeder extends Seeder
 
         $owner->organizations()->attach($acme, ['role' => Role::Owner->value]);
         $admin->organizations()->attach($acme, ['role' => Role::Admin->value]);
-        $member->organizations()->attach($acme, ['role' => Role::Member->value]);
         $admin->organizations()->attach($globex, ['role' => Role::Owner->value]);
 
         $this->seedOrganizationScenario($acme, $this->acmeScenario());

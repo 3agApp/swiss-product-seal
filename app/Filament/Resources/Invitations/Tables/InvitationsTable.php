@@ -61,6 +61,7 @@ class InvitationsTable
                     ->label('Resend')
                     ->icon('heroicon-o-arrow-path')
                     ->requiresConfirmation()
+                    ->visible(fn (Invitation $record): bool => $record->isPending())
                     ->action(function (Invitation $record): void {
                         $record->update([
                             'token' => Str::random(64),
