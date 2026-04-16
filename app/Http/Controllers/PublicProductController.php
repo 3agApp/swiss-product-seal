@@ -11,7 +11,7 @@ class PublicProductController extends Controller
     {
         $product = Product::query()
             ->where('public_uuid', $publicUuid)
-            ->with(['organization', 'category', 'supplier', 'brand', 'template', 'safetyEntry', 'documents'])
+            ->with(['distributor', 'category', 'supplier', 'brand', 'template', 'safetyEntry', 'documents'])
             ->firstOrFail();
 
         return view('products.public', [

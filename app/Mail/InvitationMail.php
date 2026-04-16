@@ -21,7 +21,7 @@ class InvitationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "You've been invited to join {$this->invitation->organization->name}",
+            subject: "You've been invited to join {$this->invitation->distributor->name}",
         );
     }
 
@@ -31,7 +31,7 @@ class InvitationMail extends Mailable implements ShouldQueue
             view: 'emails.invitation',
             with: [
                 'acceptUrl' => route('invitation.accept', ['token' => $this->invitation->token]),
-                'organizationName' => $this->invitation->organization->name,
+                'distributorName' => $this->invitation->distributor->name,
                 'role' => $this->invitation->role->getLabel(),
                 'inviterName' => $this->invitation->inviter?->name ?? 'A team member',
                 'expiresAt' => $this->invitation->expires_at->format('M j, Y g:i A'),

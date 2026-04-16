@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\DocumentType;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Template;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -42,9 +42,9 @@ class TemplateFactory extends Factory
         $requiredDataFields = array_slice($allDataFields, 0, fake()->numberBetween(0, count($allDataFields)));
 
         return [
-            'organization_id' => Organization::factory(),
+            'distributor_id' => Distributor::factory(),
             'category_id' => fn (array $attributes): int => Category::factory()->create([
-                'organization_id' => $attributes['organization_id'],
+                'distributor_id' => $attributes['distributor_id'],
             ])->id,
             'name' => fake()->words(3, true),
             'required_document_types' => $requiredDocumentTypes,

@@ -1,26 +1,26 @@
 <?php
 
 use App\Enums\Role;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\User;
 use Filament\Facades\Filament;
 
 beforeEach(function () {
-    $this->organization = Organization::factory()->create();
+    $this->distributor = Distributor::factory()->create();
     $this->owner = User::factory()->create();
     $this->admin = User::factory()->create();
 
-    $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
-    $this->organization->members()->attach($this->admin, ['role' => Role::Admin->value]);
+    $this->distributor->members()->attach($this->owner, ['role' => Role::Owner->value]);
+    $this->distributor->members()->attach($this->admin, ['role' => Role::Admin->value]);
 });
 
-it('user can access their organizations', function () {
-    expect($this->owner->canAccessTenant($this->organization))->toBeTrue()
-        ->and($this->admin->canAccessTenant($this->organization))->toBeTrue();
+it('user can access their distributors', function () {
+    expect($this->owner->canAccessTenant($this->distributor))->toBeTrue()
+        ->and($this->admin->canAccessTenant($this->distributor))->toBeTrue();
 });
 
-it('user cannot access organizations they do not belong to', function () {
-    $otherOrg = Organization::factory()->create();
+it('user cannot access distributors they do not belong to', function () {
+    $otherOrg = Distributor::factory()->create();
 
     expect($this->owner->canAccessTenant($otherOrg))->toBeFalse();
 });
@@ -31,25 +31,25 @@ it('user can get tenants', function () {
     $tenants = $this->owner->getTenants($panel);
 
     expect($tenants)->toHaveCount(1)
-        ->and($tenants->first()->id)->toBe($this->organization->id);
+        ->and($tenants->first()->id)->toBe($this->distributor->id);
 });
 
-it('user can get their role for an organization', function () {
-    expect($this->owner->getRoleForOrganization($this->organization))->toBe(Role::Owner)
-        ->and($this->admin->getRoleForOrganization($this->organization))->toBe(Role::Admin);
+it('user can get their role for an distributor', function () {
+    expect($this->owner->getRoleForDistributor($this->distributor))->toBe(Role::Owner)
+        ->and($this->admin->getRoleForDistributor($this->distributor))->toBe(Role::Admin);
 });
 
-it('user returns null role for non-member organization', function () {
-    $otherOrg = Organization::factory()->create();
+it('user returns null role for non-member distributor', function () {
+    $otherOrg = Distributor::factory()->create();
 
-    expect($this->owner->getRoleForOrganization($otherOrg))->toBeNull();
+    expect($this->owner->getRoleForDistributor($otherOrg))->toBeNull();
 });
 
-it('user can belong to multiple organizations', function () {
-    $secondOrg = Organization::factory()->create();
-    $this->owner->organizations()->attach($secondOrg, ['role' => Role::Admin->value]);
+it('user can belong to multiple distributors', function () {
+    $secondOrg = Distributor::factory()->create();
+    $this->owner->distributors()->attach($secondOrg, ['role' => Role::Admin->value]);
 
-    expect($this->owner->organizations)->toHaveCount(2);
+    expect($this->owner->distributors)->toHaveCount(2);
 });
 
 it('system admins can access the admin panel', function () {

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages\Tenancy;
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Tenancy\EditTenantProfile;
@@ -11,45 +11,45 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class EditOrganizationProfile extends EditTenantProfile
+class EditDistributorProfile extends EditTenantProfile
 {
     public static function getLabel(): string
     {
-        return 'Organization Settings';
+        return 'Distributor Settings';
     }
 
     public static function canView(Model $tenant): bool
     {
-        $role = Filament::auth()->user()->getRoleForOrganization($tenant);
+        $role = Filament::auth()->user()->getRoleForDistributor($tenant);
 
-        return $role?->canManageOrganization() ?? false;
+        return $role?->canManageDistributor() ?? false;
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('Organization details')
-                    ->description('Update how your organization appears across the workspace and in tenant URLs.')
+                Section::make('Distributor details')
+                    ->description('Update how your distributor appears across the workspace and in tenant URLs.')
                     ->aside()
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label('Organization name')
+                            ->label('Distributor name')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('e.g. Acme Procurement GmbH')
-                            ->helperText('Shown across the dashboard and member-facing organization screens.')
+                            ->helperText('Shown across the dashboard and member-facing distributor screens.')
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn ($set, ?string $state) => $set('slug', Str::slug($state ?? ''))),
                         TextInput::make('slug')
-                            ->label('Organization slug')
+                            ->label('Distributor slug')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('e.g. acme-procurement')
                             ->helperText('Used in the dashboard URL. Saving redirects you to the updated address.')
-                            ->unique(Organization::class, 'slug', ignorable: fn () => Filament::getTenant())
+                            ->unique(Distributor::class, 'slug', ignorable: fn () => Filament::getTenant())
                             ->rules(['alpha_dash:ascii']),
                     ]),
             ]);

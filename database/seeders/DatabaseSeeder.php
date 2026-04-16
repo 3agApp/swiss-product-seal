@@ -7,7 +7,7 @@ use App\Enums\ProductStatus;
 use App\Enums\Role;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
@@ -36,33 +36,33 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
-        $acme = Organization::factory()->create([
+        $acme = Distributor::factory()->create([
             'name' => 'Acme Corp',
             'slug' => 'acme-corp',
         ]);
 
-        $globex = Organization::factory()->create([
+        $globex = Distributor::factory()->create([
             'name' => 'Globex Inc',
             'slug' => 'globex-inc',
         ]);
 
-        $owner->organizations()->attach($acme, ['role' => Role::Owner->value]);
-        $admin->organizations()->attach($acme, ['role' => Role::Admin->value]);
-        $admin->organizations()->attach($globex, ['role' => Role::Owner->value]);
+        $owner->distributors()->attach($acme, ['role' => Role::Owner->value]);
+        $admin->distributors()->attach($acme, ['role' => Role::Admin->value]);
+        $admin->distributors()->attach($globex, ['role' => Role::Owner->value]);
 
-        $this->seedOrganizationScenario($acme, $this->acmeScenario());
-        $this->seedOrganizationScenario($globex, $this->globexScenario());
+        $this->seedDistributorScenario($acme, $this->acmeScenario());
+        $this->seedDistributorScenario($globex, $this->globexScenario());
     }
 
     /**
      * @param  array<string, mixed>  $scenario
      */
-    private function seedOrganizationScenario(Organization $organization, array $scenario): void
+    private function seedDistributorScenario(Distributor $distributor, array $scenario): void
     {
         $categories = collect($scenario['categories'])
-            ->mapWithKeys(function (array $categoryData) use ($organization): array {
+            ->mapWithKeys(function (array $categoryData) use ($distributor): array {
                 $category = Category::query()->create([
-                    'organization_id' => $organization->id,
+                    'distributor_id' => $distributor->id,
                     'name' => $categoryData['name'],
                     'description' => $categoryData['description'],
                 ]);
@@ -71,14 +71,14 @@ class DatabaseSeeder extends Seeder
             });
 
         $templates = collect($scenario['categories'])
-            ->flatMap(function (array $categoryData) use ($organization, $categories): Collection {
+            ->flatMap(function (array $categoryData) use ($distributor, $categories): Collection {
                 /** @var Category $category */
                 $category = $categories->get($categoryData['key']);
 
                 return collect($categoryData['templates'])
-                    ->mapWithKeys(function (array $templateData) use ($organization, $category): array {
+                    ->mapWithKeys(function (array $templateData) use ($distributor, $category): array {
                         $template = Template::query()->create([
-                            'organization_id' => $organization->id,
+                            'distributor_id' => $distributor->id,
                             'category_id' => $category->id,
                             'name' => $templateData['name'],
                             'required_document_types' => $templateData['required_document_types'],
@@ -90,9 +90,9 @@ class DatabaseSeeder extends Seeder
             });
 
         $suppliers = collect($scenario['suppliers'])
-            ->mapWithKeys(function (array $supplierData) use ($organization): array {
+            ->mapWithKeys(function (array $supplierData) use ($distributor): array {
                 $supplier = Supplier::query()->create([
-                    'organization_id' => $organization->id,
+                    'distributor_id' => $distributor->id,
                     'supplier_code' => $supplierData['supplier_code'],
                     'name' => $supplierData['name'],
                     'address' => $supplierData['address'],
@@ -103,9 +103,9 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 $brands = collect($supplierData['brands'])
-                    ->mapWithKeys(function (array $brandData) use ($organization, $supplier): array {
+                    ->mapWithKeys(function (array $brandData) use ($distributor, $supplier): array {
                         $brand = Brand::query()->create([
-                            'organization_id' => $organization->id,
+                            'distributor_id' => $distributor->id,
                             'supplier_id' => $supplier->id,
                             'name' => $brandData['name'],
                         ]);
@@ -116,7 +116,7 @@ class DatabaseSeeder extends Seeder
                 return [$supplierData['key'] => ['model' => $supplier, 'brands' => $brands]];
             });
 
-        collect($scenario['products'])->each(function (array $productData) use ($organization, $categories, $templates, $suppliers): void {
+        collect($scenario['products'])->each(function (array $productData) use ($distributor, $categories, $templates, $suppliers): void {
             /** @var Category $category */
             $category = $categories->get($productData['category']);
             /** @var Template $template */
@@ -129,7 +129,7 @@ class DatabaseSeeder extends Seeder
             $brand = $supplierEntry['brands']->get($productData['brand']);
 
             $product = Product::query()->create([
-                'organization_id' => $organization->id,
+                'distributor_id' => $distributor->id,
                 'name' => $productData['name'],
                 'internal_article_number' => $productData['internal_article_number'],
                 'supplier_article_number' => $productData['supplier_article_number'],
@@ -146,7 +146,7 @@ class DatabaseSeeder extends Seeder
 
             if (filled($productData['safety_entry'] ?? null)) {
                 ProductSafetyEntry::query()->create([
-                    'organization_id' => $organization->id,
+                    'distributor_id' => $distributor->id,
                     'product_id' => $product->id,
                     ...$productData['safety_entry'],
                 ]);

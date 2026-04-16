@@ -3,14 +3,14 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Register;
-use App\Filament\Pages\Tenancy\EditOrganizationProfile;
-use App\Filament\Pages\Tenancy\RegisterOrganization;
+use App\Filament\Pages\Tenancy\EditDistributorProfile;
+use App\Filament\Pages\Tenancy\RegisterDistributor;
+use App\Filament\Resources\DistributorMemberResource;
 use App\Filament\Resources\Invitations\InvitationResource;
-use App\Filament\Resources\OrganizationMemberResource;
 use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Suppliers\Resources\Brands\BrandResource;
 use App\Filament\Resources\Suppliers\SupplierResource;
-use App\Models\Organization;
+use App\Models\Distributor;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -44,22 +44,22 @@ class DashboardPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->tenant(Organization::class, slugAttribute: 'slug', ownershipRelationship: 'organization')
-            ->tenantRegistration(RegisterOrganization::class)
-            ->tenantProfile(EditOrganizationProfile::class)
+            ->tenant(Distributor::class, slugAttribute: 'slug', ownershipRelationship: 'distributor')
+            ->tenantRegistration(RegisterDistributor::class)
+            ->tenantProfile(EditDistributorProfile::class)
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Catalog')
                     ->collapsed(),
                 NavigationGroup::make()
-                    ->label('Organization')
+                    ->label('Distributor')
                     ->collapsed(),
             ])
             ->resources([
                 SupplierResource::class,
                 BrandResource::class,
                 ProductResource::class,
-                OrganizationMemberResource::class,
+                DistributorMemberResource::class,
                 InvitationResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

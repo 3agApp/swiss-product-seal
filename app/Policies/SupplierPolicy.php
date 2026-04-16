@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Supplier;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -11,42 +11,42 @@ class SupplierPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
     public function view(User $user, Supplier $supplier): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
     public function create(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
     public function update(User $user, Supplier $supplier): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
     public function delete(User $user, Supplier $supplier): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
     public function deleteAny(User $user): bool
     {
-        return $this->canManageOrganization($user);
+        return $this->canManageDistributor($user);
     }
 
-    private function canManageOrganization(User $user): bool
+    private function canManageDistributor(User $user): bool
     {
         $tenant = Filament::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return false;
         }
 
-        return $user->getRoleForOrganization($tenant)?->canManageOrganization() ?? false;
+        return $user->getRoleForDistributor($tenant)?->canManageDistributor() ?? false;
     }
 }

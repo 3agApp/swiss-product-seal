@@ -11,7 +11,7 @@ use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
@@ -63,11 +63,11 @@ class ProductResource extends Resource
     {
         $tenant = Filament::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return $data;
         }
 
-        $data['organization_id'] = $tenant->getKey();
+        $data['distributor_id'] = $tenant->getKey();
 
         static::ensureCategoryBelongsToTenant($tenant, $data['category_id'] ?? null);
         static::ensureTemplateBelongsToCategory($tenant, $data['template_id'] ?? null, $data['category_id'] ?? null);
@@ -77,7 +77,7 @@ class ProductResource extends Resource
         return $data;
     }
 
-    private static function ensureCategoryBelongsToTenant(Organization $tenant, mixed $categoryId): void
+    private static function ensureCategoryBelongsToTenant(Distributor $tenant, mixed $categoryId): void
     {
         if (! filled($categoryId)) {
             return;
@@ -90,12 +90,12 @@ class ProductResource extends Resource
 
         if (! $exists) {
             throw ValidationException::withMessages([
-                'category_id' => 'Select a valid category for this organization.',
+                'category_id' => 'Select a valid category for this distributor.',
             ]);
         }
     }
 
-    private static function ensureTemplateBelongsToCategory(Organization $tenant, mixed $templateId, mixed $categoryId): void
+    private static function ensureTemplateBelongsToCategory(Distributor $tenant, mixed $templateId, mixed $categoryId): void
     {
         if (! filled($templateId) || ! filled($categoryId)) {
             return;
@@ -114,7 +114,7 @@ class ProductResource extends Resource
         }
     }
 
-    private static function ensureSupplierBelongsToTenant(Organization $tenant, mixed $supplierId): void
+    private static function ensureSupplierBelongsToTenant(Distributor $tenant, mixed $supplierId): void
     {
         if (! filled($supplierId)) {
             return;
@@ -127,12 +127,12 @@ class ProductResource extends Resource
 
         if (! $exists) {
             throw ValidationException::withMessages([
-                'supplier_id' => 'Select a valid supplier for this organization.',
+                'supplier_id' => 'Select a valid supplier for this distributor.',
             ]);
         }
     }
 
-    private static function ensureBrandBelongsToSupplier(Organization $tenant, mixed $brandId, mixed $supplierId): void
+    private static function ensureBrandBelongsToSupplier(Distributor $tenant, mixed $brandId, mixed $supplierId): void
     {
         if (! filled($brandId)) {
             return;

@@ -24,8 +24,8 @@
         <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
             <div class="border-b border-gray-100 px-6 py-5">
                 <h1 class="text-xl font-bold tracking-tight">{{ $product->name }}</h1>
-                @if ($product->organization)
-                    <p class="mt-1 text-sm text-gray-500">by {{ $product->organization->name }}</p>
+                @if ($product->distributor)
+                    <p class="mt-1 text-sm text-gray-500">by {{ $product->distributor->name }}</p>
                 @endif
             </div>
 

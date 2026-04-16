@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Brand;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,9 +18,9 @@ class BrandFactory extends Factory
     public function definition(): array
     {
         return [
-            'organization_id' => Organization::factory(),
+            'distributor_id' => Distributor::factory(),
             'supplier_id' => fn (array $attributes): int => Supplier::factory()->create([
-                'organization_id' => $attributes['organization_id'],
+                'distributor_id' => $attributes['distributor_id'],
             ])->id,
             'name' => fake()->company(),
         ];

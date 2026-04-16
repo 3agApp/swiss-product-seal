@@ -7,8 +7,8 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Products\RelationManagers\Documents\DocumentForm;
 use App\Filament\Resources\Products\RelationManagers\DocumentsRelationManager;
 use App\Models\Brand;
+use App\Models\Distributor;
 use App\Models\Document;
-use App\Models\Organization;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
@@ -21,22 +21,22 @@ use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 beforeEach(function () {
-    $this->organization = Organization::factory()->create(['slug' => 'acme-corp']);
+    $this->distributor = Distributor::factory()->create(['slug' => 'acme-corp']);
     $this->owner = User::factory()->create();
 
-    $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
+    $this->distributor->members()->attach($this->owner, ['role' => Role::Owner->value]);
 
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
 
     $this->product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
     ]);

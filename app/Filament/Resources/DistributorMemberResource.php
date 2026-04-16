@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Role;
-use App\Filament\Resources\OrganizationMemberResource\Pages;
+use App\Filament\Resources\DistributorMemberResource\Pages;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -14,11 +14,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class OrganizationMemberResource extends Resource
+class DistributorMemberResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Organization';
+    protected static string|UnitEnum|null $navigationGroup = 'Distributor';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
@@ -37,11 +37,11 @@ class OrganizationMemberResource extends Resource
         return $table
             ->query(fn () => User::query()
                 ->select('users.*')
-                ->selectRaw('organization_user.role as membership_role')
-                ->selectRaw('organization_user.created_at as membership_joined_at')
-                ->join('organization_user', fn ($join) => $join
-                    ->on('users.id', '=', 'organization_user.user_id')
-                    ->where('organization_user.organization_id', Filament::getTenant()->id)))
+                ->selectRaw('distributor_user.role as membership_role')
+                ->selectRaw('distributor_user.created_at as membership_joined_at')
+                ->join('distributor_user', fn ($join) => $join
+                    ->on('users.id', '=', 'distributor_user.user_id')
+                    ->where('distributor_user.distributor_id', Filament::getTenant()->id)))
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -76,13 +76,13 @@ class OrganizationMemberResource extends Resource
                                 ->wherePivot('role', Role::Owner->value)
                                 ->count();
 
-                            $currentRole = $record->getRoleForOrganization($tenant);
+                            $currentRole = $record->getRoleForDistributor($tenant);
 
                             if ($currentRole === Role::Owner && $ownerCount <= 1) {
                                 Notification::make()
                                     ->danger()
                                     ->title('Cannot change role')
-                                    ->body('Organization must have at least one owner.')
+                                    ->body('Distributor must have at least one owner.')
                                     ->send();
 
                                 return;
@@ -99,7 +99,7 @@ class OrganizationMemberResource extends Resource
                             ->send();
                     })
                     ->visible(fn (): bool => Filament::auth()->user()
-                        ->getRoleForOrganization(Filament::getTenant())
+                        ->getRoleForDistributor(Filament::getTenant())
                         ?->canManageMembers() ?? false),
 
                 Action::make('removeMember')
@@ -109,7 +109,7 @@ class OrganizationMemberResource extends Resource
                     ->requiresConfirmation()
                     ->action(function (User $record): void {
                         $tenant = Filament::getTenant();
-                        $role = $record->getRoleForOrganization($tenant);
+                        $role = $record->getRoleForDistributor($tenant);
 
                         if ($role === Role::Owner) {
                             $ownerCount = $tenant->members()
@@ -120,7 +120,7 @@ class OrganizationMemberResource extends Resource
                                 Notification::make()
                                     ->danger()
                                     ->title('Cannot remove member')
-                                    ->body('Cannot remove the last owner of the organization.')
+                                    ->body('Cannot remove the last owner of the distributor.')
                                     ->send();
 
                                 return;
@@ -136,7 +136,7 @@ class OrganizationMemberResource extends Resource
                     })
                     ->hidden(fn (User $record): bool => $record->id === Filament::auth()->id())
                     ->visible(fn (): bool => Filament::auth()->user()
-                        ->getRoleForOrganization(Filament::getTenant())
+                        ->getRoleForDistributor(Filament::getTenant())
                         ?->canManageMembers() ?? false),
             ]);
     }
@@ -149,7 +149,7 @@ class OrganizationMemberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrganizationMembers::route('/'),
+            'index' => Pages\ListDistributorMembers::route('/'),
         ];
     }
 }

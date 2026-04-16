@@ -17,7 +17,7 @@ class Register extends FilamentRegister
             return;
         }
 
-        $invitation = Invitation::with('organization')
+        $invitation = Invitation::with('distributor')
             ->where('token', $token)
             ->whereNull('accepted_at')
             ->first();
@@ -46,14 +46,14 @@ class Register extends FilamentRegister
             Notification::make()
                 ->warning()
                 ->title('This invitation is for a different email address.')
-                ->body('Sign in with the invited email address to join the organization.')
+                ->body('Sign in with the invited email address to join the distributor.')
                 ->send();
 
             return;
         }
 
-        if (! $user->organizations()->whereKey($invitation->organization_id)->exists()) {
-            $user->organizations()->attach($invitation->organization_id, [
+        if (! $user->distributors()->whereKey($invitation->distributor_id)->exists()) {
+            $user->distributors()->attach($invitation->distributor_id, [
                 'role' => $invitation->role->value,
             ]);
         }
@@ -62,13 +62,13 @@ class Register extends FilamentRegister
 
         session()->forget('pending_invitation_token');
         session()->put('url.intended', route('filament.dashboard.pages.dashboard', [
-            'tenant' => $invitation->organization->slug,
+            'tenant' => $invitation->distributor->slug,
         ]));
 
         Notification::make()
             ->success()
             ->title('Invitation accepted.')
-            ->body('Your account has been added to the organization.')
+            ->body('Your account has been added to the distributor.')
             ->send();
     }
 

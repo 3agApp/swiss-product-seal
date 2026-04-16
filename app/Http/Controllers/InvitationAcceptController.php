@@ -13,7 +13,7 @@ class InvitationAcceptController extends Controller
 {
     public function __invoke(Request $request, string $token): RedirectResponse
     {
-        $invitation = Invitation::with('organization')
+        $invitation = Invitation::with('distributor')
             ->where('token', $token)
             ->firstOrFail();
 
@@ -47,8 +47,8 @@ class InvitationAcceptController extends Controller
                 return redirect()->route('filament.dashboard.auth.login');
             }
 
-            if (! $existingUser->organizations()->whereKey($invitation->organization_id)->exists()) {
-                $existingUser->organizations()->attach($invitation->organization_id, [
+            if (! $existingUser->distributors()->whereKey($invitation->distributor_id)->exists()) {
+                $existingUser->distributors()->attach($invitation->distributor_id, [
                     'role' => $invitation->role->value,
                 ]);
             }
@@ -62,7 +62,7 @@ class InvitationAcceptController extends Controller
 
             if (Auth::check()) {
                 return redirect()->route('filament.dashboard.pages.dashboard', [
-                    'tenant' => $invitation->organization->slug,
+                    'tenant' => $invitation->distributor->slug,
                 ]);
             }
 
@@ -73,7 +73,7 @@ class InvitationAcceptController extends Controller
 
         Notification::make()
             ->info()
-            ->title('Please create an account to join the organization.')
+            ->title('Please create an account to join the distributor.')
             ->send();
 
         return redirect()->route('filament.dashboard.auth.register');

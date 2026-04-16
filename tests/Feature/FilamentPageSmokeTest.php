@@ -2,15 +2,15 @@
 
 use App\Enums\Role;
 use App\Models\Brand;
+use App\Models\Distributor;
 use App\Models\Invitation;
-use App\Models\Organization;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
 
 dataset('tenant_filament_pages', [
     'dashboard' => ['filament.dashboard.pages.dashboard'],
-    'organization profile' => ['filament.dashboard.tenant.profile'],
+    'distributor profile' => ['filament.dashboard.tenant.profile'],
     'members index' => ['filament.dashboard.resources.members.index'],
     'invitations index' => ['filament.dashboard.resources.invitations.index'],
     'invitations create' => ['filament.dashboard.resources.invitations.create'],
@@ -26,29 +26,29 @@ dataset('tenant_filament_pages', [
 ]);
 
 beforeEach(function () {
-    $this->organization = Organization::factory()->create(['slug' => 'acme-corp']);
+    $this->distributor = Distributor::factory()->create(['slug' => 'acme-corp']);
     $this->owner = User::factory()->create();
     $this->prospect = User::factory()->create();
 
-    $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
+    $this->distributor->members()->attach($this->owner, ['role' => Role::Owner->value]);
 
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
 
     $this->product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
     ]);
 
     Invitation::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'invited_by' => $this->owner->id,
     ]);
 });
@@ -65,7 +65,7 @@ it('loads the tenant registration page', function () {
 });
 
 it('loads each tenant filament page', function (string $routeName) {
-    $parameters = ['tenant' => $this->organization];
+    $parameters = ['tenant' => $this->distributor];
 
     if ($routeName === 'filament.dashboard.resources.suppliers.edit') {
         $parameters['record'] = $this->supplier;

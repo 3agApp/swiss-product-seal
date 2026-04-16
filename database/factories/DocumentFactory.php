@@ -19,7 +19,7 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'organization_id' => fn (array $attributes): int => Product::query()->findOrFail($attributes['product_id'])->organization_id,
+            'distributor_id' => fn (array $attributes): int => Product::query()->findOrFail($attributes['product_id'])->distributor_id,
             'product_id' => Product::factory(),
             'type' => fake()->randomElement(DocumentType::cases()),
         ];

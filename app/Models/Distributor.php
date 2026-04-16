@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\OrganizationFactory;
+use Database\Factories\DistributorFactory;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'slug'])]
-class Organization extends Model implements HasCurrentTenantLabel
+class Distributor extends Model implements HasCurrentTenantLabel
 {
-    /** @use HasFactory<OrganizationFactory> */
+    /** @use HasFactory<DistributorFactory> */
     use HasFactory;
 
     public function suppliers(): HasMany
@@ -60,6 +60,6 @@ class Organization extends Model implements HasCurrentTenantLabel
 
     public function getCurrentTenantLabel(): string
     {
-        return 'Active Organization';
+        return 'Active Distributor';
     }
 }

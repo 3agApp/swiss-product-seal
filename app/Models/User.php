@@ -25,9 +25,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public function organizations(): BelongsToMany
+    public function distributors(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class)
+        return $this->belongsToMany(Distributor::class)
             ->withPivot('role')
             ->withTimestamps();
     }
@@ -48,17 +48,17 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
 
     public function getTenants(Panel $panel): Collection
     {
-        return $this->organizations;
+        return $this->distributors;
     }
 
     public function canAccessTenant(Model $tenant): bool
     {
-        return $this->organizations()->whereKey($tenant)->exists();
+        return $this->distributors()->whereKey($tenant)->exists();
     }
 
-    public function getRoleForOrganization(Organization $organization): ?Role
+    public function getRoleForDistributor(Distributor $distributor): ?Role
     {
-        $membership = $this->organizations()->whereKey($organization)->first();
+        $membership = $this->distributors()->whereKey($distributor)->first();
 
         return $membership ? Role::from($membership->pivot->role) : null;
     }

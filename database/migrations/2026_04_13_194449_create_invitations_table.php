@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained();
+            $table->foreignIdFor(Distributor::class)->constrained();
             $table->string('email');
             $table->string('role')->default('member');
             $table->string('token')->unique();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'invited_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['organization_id', 'email', 'accepted_at']);
+            $table->unique(['distributor_id', 'email', 'accepted_at']);
         });
     }
 

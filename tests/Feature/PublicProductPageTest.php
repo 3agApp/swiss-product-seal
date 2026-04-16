@@ -1,13 +1,13 @@
 <?php
 
 use App\Enums\ProductStatus;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 
 it('displays the public product page for a valid public uuid', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'name' => 'Test Product Alpha',
         'status' => ProductStatus::Approved,
     ]);
@@ -15,13 +15,13 @@ it('displays the public product page for a valid public uuid', function () {
     $this->get(route('products.public', $product->public_uuid))
         ->assertSuccessful()
         ->assertSee('Test Product Alpha')
-        ->assertSee($organization->name)
+        ->assertSee($distributor->name)
         ->assertSee('SPS_verified_trans.png', false);
 });
 
 it('shows in-progress seal for products under review', function () {
     $product = Product::factory()->create([
-        'organization_id' => Organization::factory(),
+        'distributor_id' => Distributor::factory(),
         'status' => ProductStatus::UnderReview,
     ]);
 
@@ -32,7 +32,7 @@ it('shows in-progress seal for products under review', function () {
 
 it('shows not-verified seal for open products', function () {
     $product = Product::factory()->create([
-        'organization_id' => Organization::factory(),
+        'distributor_id' => Distributor::factory(),
         'status' => ProductStatus::Open,
         'completeness_score' => 0,
     ]);

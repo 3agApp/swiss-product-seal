@@ -31,12 +31,12 @@ enum Role: string implements HasColor, HasLabel
         return true;
     }
 
-    public function canManageOrganization(): bool
+    public function canManageDistributor(): bool
     {
         return true;
     }
 
-    public function canDeleteOrganization(): bool
+    public function canDeleteDistributor(): bool
     {
         return $this === self::Owner;
     }

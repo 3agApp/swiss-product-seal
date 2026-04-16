@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['organization_id', 'category_id', 'name', 'required_document_types', 'required_data_fields'])]
+#[Fillable(['distributor_id', 'category_id', 'name', 'required_document_types', 'required_data_fields'])]
 class Template extends Model
 {
     /** @use HasFactory<TemplateFactory> */
@@ -36,9 +36,9 @@ class Template extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function organization(): BelongsTo
+    public function distributor(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Distributor::class);
     }
 
     public function products(): HasMany
@@ -52,7 +52,7 @@ class Template extends Model
     protected function casts(): array
     {
         return [
-            'organization_id' => 'integer',
+            'distributor_id' => 'integer',
             'category_id' => 'integer',
             'required_document_types' => 'array',
             'required_data_fields' => 'array',

@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
+use App\Models\Distributor;
 use App\Models\Document;
-use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
 
@@ -57,17 +57,17 @@ class DocumentPolicy
 
         $tenant = Filament::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return false;
         }
 
-        $role = $user->getRoleForOrganization($tenant);
+        $role = $user->getRoleForDistributor($tenant);
 
-        if (! $role?->canManageOrganization()) {
+        if (! $role?->canManageDistributor()) {
             return false;
         }
 
-        return (int) $document->organization_id === (int) $tenant->getKey();
+        return (int) $document->distributor_id === (int) $tenant->getKey();
     }
 
     private function canManageDocuments(User $user): bool
@@ -78,10 +78,10 @@ class DocumentPolicy
 
         $tenant = Filament::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return false;
         }
 
-        return $user->getRoleForOrganization($tenant)?->canManageOrganization() ?? false;
+        return $user->getRoleForDistributor($tenant)?->canManageDistributor() ?? false;
     }
 }

@@ -8,8 +8,8 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Distributor;
 use App\Models\Document;
-use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
@@ -19,28 +19,28 @@ use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->organization = Organization::factory()->create();
+    $this->distributor = Distributor::factory()->create();
     $this->owner = User::factory()->create();
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
     $this->product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'status' => ProductStatus::UnderReview,
     ]);
 
-    $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
+    $this->distributor->members()->attach($this->owner, ['role' => Role::Owner->value]);
 
     $this->actingAs($this->owner);
 
     Filament::setCurrentPanel(Filament::getPanel('dashboard'));
-    Filament::setTenant($this->organization);
+    Filament::setTenant($this->distributor);
 });
 
 it('does not expose a status field on the create product page', function () {
@@ -71,18 +71,18 @@ it('does not show a selected category summary on the edit product page', functio
 
 it('shows the completeness score on the edit product page', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => ['safety_text'],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -90,13 +90,13 @@ it('shows the completeness score on the edit product page', function () {
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
 
     ProductSafetyEntry::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'safety_text' => null,
     ]);
@@ -121,18 +121,18 @@ it('ignores dashboard attempts to change product status when editing', function 
 
 it('submits a completed product for review from the edit page header action', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -141,7 +141,7 @@ it('submits a completed product for review from the edit page header action', fu
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -156,18 +156,18 @@ it('submits a completed product for review from the edit page header action', fu
 
 it('hides the submit for review action on the edit page for incomplete products', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -181,18 +181,18 @@ it('hides the submit for review action on the edit page for incomplete products'
 
 it('submits completed products for review from the table action', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -201,7 +201,7 @@ it('submits completed products for review from the table action', function () {
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -231,18 +231,18 @@ it('hides secondary product table columns by default', function () {
 
 it('submits only eligible products from the bulk review action', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $completedProduct = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -251,7 +251,7 @@ it('submits only eligible products from the bulk review action', function () {
     ]);
 
     $incompleteProduct = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -260,7 +260,7 @@ it('submits only eligible products from the bulk review action', function () {
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $completedProduct->id,
         'type' => DocumentType::Manual,
     ]);
@@ -275,18 +275,18 @@ it('submits only eligible products from the bulk review action', function () {
 
 it('filters the products table with product tabs', function () {
     $category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $completedProduct = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -296,7 +296,7 @@ it('filters the products table with product tabs', function () {
     ]);
 
     $underReviewProduct = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -306,7 +306,7 @@ it('filters the products table with product tabs', function () {
     ]);
 
     $incompleteProduct = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $category->id,
@@ -316,7 +316,7 @@ it('filters the products table with product tabs', function () {
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $completedProduct->id,
         'type' => DocumentType::Manual,
     ]);

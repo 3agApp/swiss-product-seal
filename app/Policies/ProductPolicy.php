@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -47,10 +47,10 @@ class ProductPolicy
 
         $tenant = Filament::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return false;
         }
 
-        return $user->getRoleForOrganization($tenant)?->canManageOrganization() ?? false;
+        return $user->getRoleForDistributor($tenant)?->canManageDistributor() ?? false;
     }
 }

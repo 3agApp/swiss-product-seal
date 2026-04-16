@@ -75,7 +75,7 @@ class ProductsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('No products found')
-            ->emptyStateDescription('Create your first product for this organization.')
+            ->emptyStateDescription('Create your first product for this distributor.')
             ->recordActions([
                 Action::make('submitForReview')
                     ->label('Submit for review')

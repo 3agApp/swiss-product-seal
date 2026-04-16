@@ -34,7 +34,7 @@ class EditAdminProduct extends EditRecord
                 ->color('warning')
                 ->form([
                     Textarea::make('clarification_note')
-                        ->label('Note for the organization')
+                        ->label('Note for the distributor')
                         ->placeholder('Explain what needs to be corrected or provided…')
                         ->required()
                         ->rows(4)

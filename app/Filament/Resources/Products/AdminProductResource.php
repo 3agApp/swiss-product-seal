@@ -63,7 +63,7 @@ class AdminProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['organization', 'category', 'template', 'supplier', 'brand']);
+            ->with(['distributor', 'category', 'template', 'supplier', 'brand']);
     }
 
     public static function getPages(): array

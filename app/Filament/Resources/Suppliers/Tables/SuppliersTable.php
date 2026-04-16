@@ -57,7 +57,7 @@ class SuppliersTable
             ])
             ->defaultSort('name')
             ->emptyStateHeading('No suppliers found')
-            ->emptyStateDescription('Add your first supplier for this organization.')
+            ->emptyStateDescription('Add your first supplier for this distributor.')
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

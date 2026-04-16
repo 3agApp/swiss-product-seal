@@ -27,14 +27,14 @@ class CreateInvitation extends CreateRecord
         if ($existingMember) {
             Notification::make()
                 ->danger()
-                ->title('User is already a member of this organization.')
+                ->title('User is already a member of this distributor.')
                 ->send();
 
             $this->halt();
         }
 
         $existingInvitation = Invitation::query()
-            ->where('organization_id', $tenant->id)
+            ->where('distributor_id', $tenant->id)
             ->where('email', $data['email'])
             ->whereNull('accepted_at')
             ->first();
@@ -47,7 +47,7 @@ class CreateInvitation extends CreateRecord
                 'invited_by' => Filament::auth()->id(),
             ]);
 
-            Mail::to($existingInvitation->email)->send(new InvitationMail($existingInvitation->fresh(['organization', 'inviter'])));
+            Mail::to($existingInvitation->email)->send(new InvitationMail($existingInvitation->fresh(['distributor', 'inviter'])));
 
             Notification::make()
                 ->success()
@@ -58,7 +58,7 @@ class CreateInvitation extends CreateRecord
         }
 
         $invitation = Invitation::create([
-            'organization_id' => $tenant->id,
+            'distributor_id' => $tenant->id,
             'email' => $data['email'],
             'role' => $data['role'],
             'token' => Str::random(64),
@@ -66,7 +66,7 @@ class CreateInvitation extends CreateRecord
             'invited_by' => Filament::auth()->id(),
         ]);
 
-        Mail::to($invitation->email)->send(new InvitationMail($invitation->fresh(['organization', 'inviter'])));
+        Mail::to($invitation->email)->send(new InvitationMail($invitation->fresh(['distributor', 'inviter'])));
 
         return $invitation;
     }

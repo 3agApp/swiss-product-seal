@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\ProductStatus;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -16,7 +16,7 @@ class AdminReviewStatsOverview extends StatsOverviewWidget
         $approvedToday = Product::where('status', ProductStatus::Approved)
             ->where('last_reviewed_at', '>=', now()->startOfDay())
             ->count();
-        $totalOrganizations = Organization::count();
+        $totalDistributors = Distributor::count();
         $totalProducts = Product::count();
 
         return [
@@ -26,11 +26,11 @@ class AdminReviewStatsOverview extends StatsOverviewWidget
             Stat::make('Approved today', $approvedToday)
                 ->description('Products approved today')
                 ->color('success'),
-            Stat::make('Organizations', $totalOrganizations)
-                ->description('Total registered organizations')
+            Stat::make('Distributors', $totalDistributors)
+                ->description('Total registered distributors')
                 ->color('primary'),
             Stat::make('Total products', $totalProducts)
-                ->description('Across all organizations')
+                ->description('Across all distributors')
                 ->color('primary'),
         ];
     }

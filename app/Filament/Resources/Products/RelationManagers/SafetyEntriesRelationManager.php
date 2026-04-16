@@ -107,7 +107,7 @@ class SafetyEntriesRelationManager extends RelationManager
                     ->visible(fn (): bool => $this->getOwnerRecord()->safetyEntries()->doesntExist())
                     ->mutateDataUsing(fn (array $data): array => [
                         ...$data,
-                        'organization_id' => $this->getOwnerRecord()->organization_id,
+                        'distributor_id' => $this->getOwnerRecord()->distributor_id,
                     ]),
             ])
             ->recordActions([

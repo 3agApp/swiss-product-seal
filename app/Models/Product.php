@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
-#[Fillable(['organization_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'clarification_note', 'completeness_score', 'last_reviewed_at', 'source_last_sync_at'])]
+#[Fillable(['distributor_id', 'name', 'internal_article_number', 'supplier_article_number', 'order_number', 'ean', 'supplier_id', 'brand_id', 'category_id', 'template_id', 'status', 'clarification_note', 'completeness_score', 'last_reviewed_at', 'source_last_sync_at'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -51,9 +51,9 @@ class Product extends Model
         return $query->where('completeness_score', '<', 100);
     }
 
-    public function organization(): BelongsTo
+    public function distributor(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Distributor::class);
     }
 
     public function supplier(): BelongsTo
@@ -105,7 +105,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'organization_id' => 'integer',
+            'distributor_id' => 'integer',
             'supplier_id' => 'integer',
             'brand_id' => 'integer',
             'category_id' => 'integer',
@@ -479,7 +479,7 @@ class Product extends Model
 
             $admins->each->notify($notification);
         } else {
-            $this->organization
+            $this->distributor
                 ->members()
                 ->get()
                 ->each->notify($notification);

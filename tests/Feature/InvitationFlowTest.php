@@ -2,8 +2,8 @@
 
 use App\Enums\Role;
 use App\Filament\Pages\Auth\Register as RegisterPage;
+use App\Models\Distributor;
 use App\Models\Invitation;
-use App\Models\Organization;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
@@ -20,10 +20,10 @@ it('detects pending expired and accepted invitations', function () {
 });
 
 it('accepts invitation for existing user', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $user = User::factory()->create();
     $invitation = Invitation::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'email' => $user->email,
         'role' => Role::Admin,
     ]);
@@ -33,22 +33,22 @@ it('accepts invitation for existing user', function () {
     $response->assertRedirect(route('filament.dashboard.auth.login'));
     $response->assertSessionHas('filament.notifications.0.title', 'Invitation accepted.');
 
-    expect($user->fresh()->organizations()->whereKey($organization)->exists())->toBeTrue()
-        ->and($user->fresh()->getRoleForOrganization($organization))->toBe(Role::Admin)
+    expect($user->fresh()->distributors()->whereKey($distributor)->exists())->toBeTrue()
+        ->and($user->fresh()->getRoleForDistributor($distributor))->toBe(Role::Admin)
         ->and($invitation->fresh()->isAccepted())->toBeTrue();
 });
 
 it('redirects authenticated invited users to their tenant dashboard', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $user = User::factory()->create();
     $invitation = Invitation::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'email' => $user->email,
     ]);
 
     $response = $this->actingAs($user)->get(route('invitation.accept', ['token' => $invitation->token]));
 
-    $response->assertRedirect(route('filament.dashboard.pages.dashboard', ['tenant' => $organization->slug]));
+    $response->assertRedirect(route('filament.dashboard.pages.dashboard', ['tenant' => $distributor->slug]));
     $response->assertSessionHas('filament.notifications.0.title', 'Invitation accepted.');
 });
 
@@ -60,7 +60,7 @@ it('redirects new users to register for invitation acceptance', function () {
     $response = $this->get(route('invitation.accept', ['token' => $invitation->token]));
 
     $response->assertRedirect(route('filament.dashboard.auth.register'));
-    $response->assertSessionHas('filament.notifications.0.title', 'Please create an account to join the organization.');
+    $response->assertSessionHas('filament.notifications.0.title', 'Please create an account to join the distributor.');
 
     expect(session('pending_invitation_token'))->toBe($invitation->token);
 });
@@ -84,11 +84,11 @@ it('rejects already accepted invitation', function () {
 });
 
 it('does not accept an invitation while signed in as a different user', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
     $currentUser = User::factory()->create(['email' => 'current@example.com']);
     $invitation = Invitation::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'email' => $invitedUser->email,
     ]);
 
@@ -97,16 +97,16 @@ it('does not accept an invitation while signed in as a different user', function
     $response->assertRedirect(route('filament.dashboard.auth.login'));
     $response->assertSessionHas('filament.notifications.0.title', 'Sign in with the invited account to accept this invitation.');
 
-    expect($invitedUser->fresh()->organizations()->whereKey($organization)->exists())->toBeFalse()
+    expect($invitedUser->fresh()->distributors()->whereKey($distributor)->exists())->toBeFalse()
         ->and($invitation->fresh()->isAccepted())->toBeFalse();
 });
 
 it('accepts a pending invitation after matching registration', function () {
     Filament::setCurrentPanel('dashboard');
 
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $invitation = Invitation::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'email' => 'newuser@example.com',
     ]);
 
@@ -118,12 +118,12 @@ it('accepts a pending invitation after matching registration', function () {
         ->set('data.password', 'password')
         ->set('data.passwordConfirmation', 'password')
         ->call('register')
-        ->assertRedirect(route('filament.dashboard.pages.dashboard', ['tenant' => $organization->slug]));
+        ->assertRedirect(route('filament.dashboard.pages.dashboard', ['tenant' => $distributor->slug]));
 
     $user = User::where('email', $invitation->email)->first();
 
     expect($user)->not->toBeNull()
-        ->and($user->organizations()->whereKey($organization)->exists())->toBeTrue()
+        ->and($user->distributors()->whereKey($distributor)->exists())->toBeTrue()
         ->and($invitation->fresh()->isAccepted())->toBeTrue();
 });
 

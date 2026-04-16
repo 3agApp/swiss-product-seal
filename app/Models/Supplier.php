@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['organization_id', 'supplier_code', 'name', 'address', 'country', 'email', 'phone', 'active'])]
+#[Fillable(['distributor_id', 'supplier_code', 'name', 'address', 'country', 'email', 'phone', 'active'])]
 class Supplier extends Model
 {
     /** @use HasFactory<SupplierFactory> */
     use HasFactory;
 
-    public function organization(): BelongsTo
+    public function distributor(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Distributor::class);
     }
 
     public function brands(): HasMany
@@ -36,7 +36,7 @@ class Supplier extends Model
     protected function casts(): array
     {
         return [
-            'organization_id' => 'integer',
+            'distributor_id' => 'integer',
             'active' => 'boolean',
         ];
     }

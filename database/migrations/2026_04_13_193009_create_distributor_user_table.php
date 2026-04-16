@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,14 +13,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organization_user', function (Blueprint $table) {
+        Schema::create('distributor_user', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Organization::class)->constrained();
+            $table->foreignIdFor(Distributor::class)->constrained();
             $table->string('role')->default('member');
             $table->timestamps();
 
-            $table->unique(['organization_id', 'user_id']);
+            $table->unique(['distributor_id', 'user_id']);
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organization_user');
+        Schema::dropIfExists('distributor_user');
     }
 };

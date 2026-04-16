@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +17,7 @@ class SupplierFactory extends Factory
     public function definition(): array
     {
         return [
-            'organization_id' => Organization::factory(),
+            'distributor_id' => Distributor::factory(),
             'supplier_code' => strtoupper(fake()->bothify('SUP-#####')),
             'name' => fake()->company(),
             'address' => fake()->address(),

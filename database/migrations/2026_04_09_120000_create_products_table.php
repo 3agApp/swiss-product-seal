@@ -3,7 +3,7 @@
 use App\Enums\ProductStatus;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Supplier;
 use App\Models\Template;
 use Illuminate\Database\Migrations\Migration;
@@ -16,7 +16,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained();
+            $table->foreignIdFor(Distributor::class)->constrained();
             $table->string('name');
             $table->string('internal_article_number')->nullable();
             $table->string('supplier_article_number')->nullable();

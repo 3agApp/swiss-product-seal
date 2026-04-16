@@ -8,8 +8,8 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\RelationManagers\DocumentsRelationManager;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Distributor;
 use App\Models\Document;
-use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
@@ -17,35 +17,35 @@ use App\Models\Template;
 use App\Models\User;
 
 beforeEach(function () {
-    $this->organization = Organization::factory()->create(['slug' => 'acme-corp']);
+    $this->distributor = Distributor::factory()->create(['slug' => 'acme-corp']);
     $this->owner = User::factory()->create();
 
-    $this->organization->members()->attach($this->owner, ['role' => Role::Owner->value]);
+    $this->distributor->members()->attach($this->owner, ['role' => Role::Owner->value]);
 
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
 
     $this->category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 });
 
 test('product completeness reflects required documents and safety fields', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value, DocumentType::DeclarationOfConformity->value],
         'required_data_fields' => ['safety_text', 'warning_text'],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -53,13 +53,13 @@ test('product completeness reflects required documents and safety fields', funct
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
 
     ProductSafetyEntry::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'safety_text' => 'Keep away from open flames.',
         'warning_text' => null,
@@ -79,14 +79,14 @@ test('product completeness reflects required documents and safety fields', funct
 
 test('product completeness score stays in sync when documents and safety entries change', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => ['safety_text'],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -96,7 +96,7 @@ test('product completeness score stays in sync when documents and safety entries
     expect($product->fresh()->completeness_score)->toBe('0.00');
 
     $document = Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -104,7 +104,7 @@ test('product completeness score stays in sync when documents and safety entries
     expect($product->fresh()->completeness_score)->toBe('50.00');
 
     $entry = ProductSafetyEntry::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'safety_text' => 'Keep away from heat sources.',
     ]);
@@ -124,14 +124,14 @@ test('product completeness score stays in sync when documents and safety entries
 
 test('updating template requirements refreshes related product completeness', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -139,7 +139,7 @@ test('updating template requirements refreshes related product completeness', fu
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -155,14 +155,14 @@ test('updating template requirements refreshes related product completeness', fu
 
 test('products can only be submitted for review when fully complete', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -175,7 +175,7 @@ test('products can only be submitted for review when fully complete', function (
         ->and($product->fresh()->status)->toBe(ProductStatus::Open);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -188,14 +188,14 @@ test('products can only be submitted for review when fully complete', function (
 
 test('seal status is computed from approval and completeness without an override field', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -206,7 +206,7 @@ test('seal status is computed from approval and completeness without an override
     expect($product->sealStatus())->toBe(SealStatus::NotVerified);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);
@@ -222,14 +222,14 @@ test('seal status is computed from approval and completeness without an override
 
 test('documents relation manager flags missing required document types', function () {
     $template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value, DocumentType::DeclarationOfConformity->value],
         'required_data_fields' => [],
     ]);
 
     $product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -237,7 +237,7 @@ test('documents relation manager flags missing required document types', functio
     ]);
 
     Document::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $product->id,
         'type' => DocumentType::Manual,
     ]);

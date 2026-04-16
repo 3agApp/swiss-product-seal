@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<Organization>
+ * @extends Factory<Distributor>
  */
-class OrganizationFactory extends Factory
+class DistributorFactory extends Factory
 {
     /**
      * Define the model's default state.

@@ -6,7 +6,7 @@ use App\Enums\DocumentType;
 use App\Enums\ProductStatus;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
@@ -55,7 +55,7 @@ class ProductForm
             ->label('Category')
             ->options(fn (): array => static::getCategoryOptions())
             ->descriptions(fn (): array => static::getCategoryDescriptions())
-            ->helperText('Categories are managed from the admin panel for this organization.')
+            ->helperText('Categories are managed from the admin panel for this distributor.')
             ->live()
             ->required()
             ->columnSpanFull()
@@ -159,7 +159,7 @@ class ProductForm
                         table: Product::class,
                         column: 'internal_article_number',
                         ignoreRecord: true,
-                        modifyRuleUsing: fn ($rule) => $rule->where('organization_id', static::getTenant()?->id),
+                        modifyRuleUsing: fn ($rule) => $rule->where('distributor_id', static::getTenant()?->id),
                     ),
                 TextInput::make('supplier_article_number')
                     ->label('Supplier article number')
@@ -174,7 +174,7 @@ class ProductForm
                         table: Product::class,
                         column: 'ean',
                         ignoreRecord: true,
-                        modifyRuleUsing: fn ($rule) => $rule->where('organization_id', static::getTenant()?->id),
+                        modifyRuleUsing: fn ($rule) => $rule->where('distributor_id', static::getTenant()?->id),
                     ),
             ]);
     }
@@ -282,7 +282,7 @@ class ProductForm
     {
         $tenant = static::getTenant();
 
-        if (! $tenant instanceof Organization || blank($categoryId)) {
+        if (! $tenant instanceof Distributor || blank($categoryId)) {
             return [];
         }
 
@@ -308,7 +308,7 @@ class ProductForm
     {
         $tenant = static::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return [];
         }
 
@@ -326,7 +326,7 @@ class ProductForm
     {
         $tenant = static::getTenant();
 
-        if (! $tenant instanceof Organization || blank($supplierId)) {
+        if (! $tenant instanceof Distributor || blank($supplierId)) {
             return [];
         }
 
@@ -342,7 +342,7 @@ class ProductForm
     {
         $tenant = static::getTenant();
 
-        if (! $tenant instanceof Organization || blank($templateId)) {
+        if (! $tenant instanceof Distributor || blank($templateId)) {
             return 'Choose a template to preview its required documents and data fields.';
         }
 
@@ -466,11 +466,11 @@ class ProductForm
         ];
     }
 
-    private static function getTenant(): ?Organization
+    private static function getTenant(): ?Distributor
     {
         $tenant = Filament::getTenant();
 
-        return $tenant instanceof Organization ? $tenant : null;
+        return $tenant instanceof Distributor ? $tenant : null;
     }
 
     /**
@@ -480,7 +480,7 @@ class ProductForm
     {
         $tenant = static::getTenant();
 
-        if (! $tenant instanceof Organization) {
+        if (! $tenant instanceof Distributor) {
             return collect();
         }
 

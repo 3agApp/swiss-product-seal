@@ -15,8 +15,8 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('organization.name')
-                    ->label('Organization')
+                TextColumn::make('distributor.name')
+                    ->label('Distributor')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('name')

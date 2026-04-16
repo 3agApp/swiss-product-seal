@@ -14,8 +14,8 @@ class AdminProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('organization.name')
-                    ->label('Organization')
+                TextColumn::make('distributor.name')
+                    ->label('Distributor')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('name')
@@ -44,12 +44,12 @@ class AdminProductsTable
             ->filters([
                 SelectFilter::make('status')
                     ->options(ProductStatus::options()),
-                SelectFilter::make('organization')
-                    ->relationship('organization', 'name'),
+                SelectFilter::make('distributor')
+                    ->relationship('distributor', 'name'),
             ])
             ->defaultSort('updated_at', 'desc')
             ->emptyStateHeading('No products found')
-            ->emptyStateDescription('Products submitted by organizations will appear here for admin review.')
+            ->emptyStateDescription('Products submitted by distributors will appear here for admin review.')
             ->recordActions([
                 EditAction::make()
                     ->label('Review'),

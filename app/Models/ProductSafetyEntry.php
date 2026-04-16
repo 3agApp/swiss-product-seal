@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['organization_id', 'product_id', 'safety_text', 'warning_text', 'age_grading', 'material_information', 'usage_restrictions', 'safety_instructions', 'additional_notes'])]
+#[Fillable(['distributor_id', 'product_id', 'safety_text', 'warning_text', 'age_grading', 'material_information', 'usage_restrictions', 'safety_instructions', 'additional_notes'])]
 class ProductSafetyEntry extends Model
 {
     /** @use HasFactory<ProductSafetyEntryFactory> */
@@ -47,16 +47,16 @@ class ProductSafetyEntry extends Model
     protected static function booted(): void
     {
         static::creating(function (ProductSafetyEntry $productSafetyEntry): void {
-            if (filled($productSafetyEntry->organization_id) || blank($productSafetyEntry->product_id)) {
+            if (filled($productSafetyEntry->distributor_id) || blank($productSafetyEntry->product_id)) {
                 return;
             }
 
-            $organizationId = Product::query()
+            $distributorId = Product::query()
                 ->whereKey($productSafetyEntry->product_id)
-                ->value('organization_id');
+                ->value('distributor_id');
 
-            if (filled($organizationId)) {
-                $productSafetyEntry->organization_id = $organizationId;
+            if (filled($distributorId)) {
+                $productSafetyEntry->distributor_id = $distributorId;
             }
         });
 
@@ -69,9 +69,9 @@ class ProductSafetyEntry extends Model
         });
     }
 
-    public function organization(): BelongsTo
+    public function distributor(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Distributor::class);
     }
 
     public function product(): BelongsTo
@@ -185,7 +185,7 @@ class ProductSafetyEntry extends Model
     protected function casts(): array
     {
         return [
-            'organization_id' => 'integer',
+            'distributor_id' => 'integer',
             'product_id' => 'integer',
         ];
     }

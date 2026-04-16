@@ -18,9 +18,9 @@ class CategoryForm
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        Select::make('organization_id')
-                            ->label('Organization')
-                            ->relationship('organization', 'name')
+                        Select::make('distributor_id')
+                            ->label('Distributor')
+                            ->relationship('distributor', 'name')
                             ->native(false)
                             ->preload()
                             ->searchable()

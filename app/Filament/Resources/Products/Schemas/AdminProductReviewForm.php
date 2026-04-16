@@ -73,9 +73,9 @@ class AdminProductReviewForm
             ->columnSpanFull()
             ->columns(3)
             ->schema([
-                Placeholder::make('organization')
-                    ->label('Organization')
-                    ->content(fn (?Product $record): string => $record?->organization?->name ?? '—'),
+                Placeholder::make('distributor')
+                    ->label('Distributor')
+                    ->content(fn (?Product $record): string => $record?->distributor?->name ?? '—'),
                 Placeholder::make('name')
                     ->label('Product name')
                     ->content(fn (?Product $record): string => $record?->name ?? '—'),

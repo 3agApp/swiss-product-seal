@@ -10,28 +10,28 @@ class InvitationPolicy
 {
     public function viewAny(User $user): bool
     {
-        $role = $user->getRoleForOrganization(Filament::getTenant());
+        $role = $user->getRoleForDistributor(Filament::getTenant());
 
         return $role?->canManageMembers() ?? false;
     }
 
     public function view(User $user, Invitation $invitation): bool
     {
-        $role = $user->getRoleForOrganization(Filament::getTenant());
+        $role = $user->getRoleForDistributor(Filament::getTenant());
 
         return $role?->canManageMembers() ?? false;
     }
 
     public function create(User $user): bool
     {
-        $role = $user->getRoleForOrganization(Filament::getTenant());
+        $role = $user->getRoleForDistributor(Filament::getTenant());
 
         return $role?->canManageMembers() ?? false;
     }
 
     public function delete(User $user, Invitation $invitation): bool
     {
-        $role = $user->getRoleForOrganization(Filament::getTenant());
+        $role = $user->getRoleForDistributor(Filament::getTenant());
 
         return $role?->canManageMembers() ?? false;
     }

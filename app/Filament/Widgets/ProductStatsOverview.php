@@ -18,7 +18,7 @@ class ProductStatsOverview extends StatsOverviewWidget
             return [];
         }
 
-        $query = Product::query()->where('organization_id', $tenant->id);
+        $query = Product::query()->where('distributor_id', $tenant->id);
 
         $total = $query->count();
         $approved = (clone $query)->where('status', ProductStatus::Approved)->count();

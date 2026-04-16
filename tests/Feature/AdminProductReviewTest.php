@@ -9,8 +9,8 @@ use App\Filament\Resources\Products\RelationManagers\DocumentsRelationManager;
 use App\Filament\Resources\Products\RelationManagers\SafetyEntriesRelationManager;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Distributor;
 use App\Models\Document;
-use App\Models\Organization;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
@@ -23,29 +23,29 @@ beforeEach(function () {
     $this->systemAdmin = User::factory()->create(['email' => 'system-admin@example.com']);
     config()->set('admin.allowed_emails', [$this->systemAdmin->email]);
 
-    $this->organization = Organization::factory()->create();
-    $this->organization->members()->attach($this->systemAdmin, ['role' => Role::Owner->value]);
+    $this->distributor = Distributor::factory()->create();
+    $this->distributor->members()->attach($this->systemAdmin, ['role' => Role::Owner->value]);
 
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
 
     $this->category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
     ]);
 
     $this->product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,
@@ -116,13 +116,13 @@ it('shows relation manager content for documents and safety information on the a
     ]);
 
     $document = Document::factory()->withFile('manual.pdf')->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $this->product->id,
         'type' => DocumentType::Manual,
     ]);
 
     ProductSafetyEntry::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $this->product->id,
         'safety_text' => 'Keep away from direct heat.',
         'warning_text' => 'Adult supervision required.',
@@ -143,7 +143,7 @@ it('clears the clarification note when the product is resubmitted for review', f
     ]);
 
     Document::factory()->withFile('manual.pdf')->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'product_id' => $this->product->id,
         'type' => DocumentType::Manual,
     ]);

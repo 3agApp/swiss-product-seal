@@ -3,7 +3,7 @@
 use App\Enums\Role;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
@@ -25,29 +25,29 @@ beforeEach(function () {
     $this->systemAdmin = User::factory()->create(['email' => 'system-admin@example.com']);
     config()->set('admin.allowed_emails', [$this->systemAdmin->email]);
 
-    $this->organization = Organization::factory()->create();
-    $this->organization->members()->attach($this->systemAdmin, ['role' => Role::Owner->value]);
+    $this->distributor = Distributor::factory()->create();
+    $this->distributor->members()->attach($this->systemAdmin, ['role' => Role::Owner->value]);
 
     $this->supplier = Supplier::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->brand = Brand::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
     ]);
 
     $this->category = Category::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
     ]);
 
     $this->template = Template::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
     ]);
 
     $this->product = Product::factory()->create([
-        'organization_id' => $this->organization->id,
+        'distributor_id' => $this->distributor->id,
         'supplier_id' => $this->supplier->id,
         'brand_id' => $this->brand->id,
         'category_id' => $this->category->id,

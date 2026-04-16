@@ -6,7 +6,7 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\Products\RelationManagers\SafetyEntriesRelationManager;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use App\Models\ProductSafetyEntry;
 use App\Models\Supplier;
@@ -24,17 +24,17 @@ test('product safety entries table has a unique constraint for product', functio
     }))->toBeTrue();
 });
 
-test('product safety entries inherit the owning product organization when created through the relation', function () {
-    $organization = Organization::factory()->create();
+test('product safety entries inherit the owning product distributor when created through the relation', function () {
+    $distributor = Distributor::factory()->create();
     $supplier = Supplier::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
     ]);
     $brand = Brand::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'supplier_id' => $supplier->id,
     ]);
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
     ]);
@@ -44,30 +44,30 @@ test('product safety entries inherit the owning product organization when create
         'warning_text' => 'Adult supervision required.',
     ]);
 
-    expect($entry->organization_id)->toBe($organization->id)
+    expect($entry->distributor_id)->toBe($distributor->id)
         ->and($entry->product->is($product))->toBeTrue();
 });
 
 test('product resource registers the safety information relation manager', function () {
-    $organization = Organization::factory()->create(['slug' => 'acme-corp']);
+    $distributor = Distributor::factory()->create(['slug' => 'acme-corp']);
     $owner = User::factory()->create();
-    $organization->members()->attach($owner, ['role' => Role::Owner->value]);
+    $distributor->members()->attach($owner, ['role' => Role::Owner->value]);
 
     $supplier = Supplier::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
     ]);
     $brand = Brand::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'supplier_id' => $supplier->id,
     ]);
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'supplier_id' => $supplier->id,
         'brand_id' => $brand->id,
     ]);
 
     ProductSafetyEntry::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'product_id' => $product->id,
         'safety_text' => 'Keep away from open flames.',
     ]);
@@ -83,23 +83,23 @@ test('product resource registers the safety information relation manager', funct
 });
 
 test('product safety entries report missing template-required fields', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $category = Category::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
     ]);
     $template = Template::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => ['safety_text', 'warning_text', 'age_grading'],
     ]);
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'template_id' => $template->id,
     ]);
 
     $entry = ProductSafetyEntry::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'product_id' => $product->id,
         'safety_text' => 'Keep away from heat sources.',
         'warning_text' => null,
@@ -115,23 +115,23 @@ test('product safety entries report missing template-required fields', function 
 });
 
 test('product safety entries report when the template has no required safety fields', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $category = Category::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
     ]);
     $template = Template::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => [],
     ]);
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'template_id' => $template->id,
     ]);
 
     $entry = ProductSafetyEntry::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'product_id' => $product->id,
     ]);
 
@@ -143,17 +143,17 @@ test('product safety entries report when the template has no required safety fie
 });
 
 test('product safety entry form helper text marks template-required fields without making others required', function () {
-    $organization = Organization::factory()->create();
+    $distributor = Distributor::factory()->create();
     $category = Category::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
     ]);
     $template = Template::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => ['warning_text', 'safety_instructions'],
     ]);
     $product = Product::factory()->create([
-        'organization_id' => $organization->id,
+        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'template_id' => $template->id,
     ]);

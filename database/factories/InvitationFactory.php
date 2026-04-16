@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\Role;
+use App\Models\Distributor;
 use App\Models\Invitation;
-use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -22,7 +22,7 @@ class InvitationFactory extends Factory
     public function definition(): array
     {
         return [
-            'organization_id' => Organization::factory(),
+            'distributor_id' => Distributor::factory(),
             'email' => fake()->unique()->safeEmail(),
             'role' => Role::Admin,
             'token' => Str::random(64),

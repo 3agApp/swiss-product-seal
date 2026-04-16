@@ -11,7 +11,7 @@ class CreateTemplate extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['organization_id'] = $this->getParentRecord()->organization_id;
+        $data['distributor_id'] = $this->getParentRecord()->distributor_id;
 
         return $data;
     }

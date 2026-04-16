@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Organization;
+use App\Models\Distributor;
 use App\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('product_safety_entries', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Organization::class)->constrained();
+            $table->foreignIdFor(Distributor::class)->constrained();
             $table->foreignIdFor(Product::class)->unique()->constrained()->cascadeOnDelete();
             $table->text('safety_text')->nullable();
             $table->text('warning_text')->nullable();

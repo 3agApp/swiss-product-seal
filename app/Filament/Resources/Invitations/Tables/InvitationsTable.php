@@ -55,7 +55,7 @@ class InvitationsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('No invitations found')
-            ->emptyStateDescription('Invite your first teammate to this organization.')
+            ->emptyStateDescription('Invite your first teammate to this distributor.')
             ->recordActions([
                 Action::make('resend')
                     ->label('Resend')
@@ -68,7 +68,7 @@ class InvitationsTable
                             'expires_at' => now()->addHours(48),
                         ]);
 
-                        Mail::to($record->email)->send(new InvitationMail($record->fresh(['organization', 'inviter'])));
+                        Mail::to($record->email)->send(new InvitationMail($record->fresh(['distributor', 'inviter'])));
 
                         Notification::make()
                             ->success()

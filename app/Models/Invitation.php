@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['organization_id', 'email', 'role', 'token', 'expires_at', 'accepted_at', 'invited_by'])]
+#[Fillable(['distributor_id', 'email', 'role', 'token', 'expires_at', 'accepted_at', 'invited_by'])]
 class Invitation extends Model
 {
     /** @use HasFactory<InvitationFactory> */
@@ -24,9 +24,9 @@ class Invitation extends Model
         ];
     }
 
-    public function organization(): BelongsTo
+    public function distributor(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(Distributor::class);
     }
 
     public function inviter(): BelongsTo
