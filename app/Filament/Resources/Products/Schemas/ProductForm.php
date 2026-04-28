@@ -57,7 +57,7 @@ class ProductForm
             ->label('Category')
             ->options(fn (): array => static::getCategoryOptions())
             ->descriptions(fn (): array => static::getCategoryDescriptions())
-            ->helperText('Categories are managed from the admin panel for this distributor.')
+            ->helperText('Categories are managed from the admin panel.')
             ->live()
             ->required()
             ->columnSpanFull()
