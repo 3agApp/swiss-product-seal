@@ -60,9 +60,8 @@ class DatabaseSeeder extends Seeder
     private function seedDistributorScenario(Distributor $distributor, array $scenario): void
     {
         $categories = collect($scenario['categories'])
-            ->mapWithKeys(function (array $categoryData) use ($distributor): array {
+            ->mapWithKeys(function (array $categoryData): array {
                 $category = Category::query()->create([
-                    'distributor_id' => $distributor->id,
                     'name' => $categoryData['name'],
                     'description' => $categoryData['description'],
                 ]);
@@ -71,14 +70,13 @@ class DatabaseSeeder extends Seeder
             });
 
         $templates = collect($scenario['categories'])
-            ->flatMap(function (array $categoryData) use ($distributor, $categories): Collection {
+            ->flatMap(function (array $categoryData) use ($categories): Collection {
                 /** @var Category $category */
                 $category = $categories->get($categoryData['key']);
 
                 return collect($categoryData['templates'])
-                    ->mapWithKeys(function (array $templateData) use ($distributor, $category): array {
+                    ->mapWithKeys(function (array $templateData) use ($category): array {
                         $template = Template::query()->create([
-                            'distributor_id' => $distributor->id,
                             'category_id' => $category->id,
                             'name' => $templateData['name'],
                             'required_document_types' => $templateData['required_document_types'],

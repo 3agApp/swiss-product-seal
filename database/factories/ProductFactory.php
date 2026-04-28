@@ -26,9 +26,7 @@ class ProductFactory extends Factory
             'supplier_article_number' => strtoupper(fake()->bothify('SUP-#####')),
             'order_number' => strtoupper(fake()->bothify('ORD-#####')),
             'ean' => fake()->ean13(),
-            'category_id' => fn (array $attributes): int => Category::factory()->create([
-                'distributor_id' => $attributes['distributor_id'],
-            ])->id,
+            'category_id' => Category::factory(),
             'status' => ProductStatus::Open,
             'source_last_sync_at' => fake()->optional()->dateTime(),
         ];
@@ -39,7 +37,6 @@ class ProductFactory extends Factory
         return $this->afterMaking(function (Product $product): void {
             if (! $product->template_id) {
                 $template = Template::factory()->create([
-                    'distributor_id' => $product->distributor_id,
                     'category_id' => $product->category_id,
                 ]);
                 $product->template_id = $template->id;

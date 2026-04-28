@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -18,13 +17,6 @@ class CategoryForm
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        Select::make('distributor_id')
-                            ->label('Distributor')
-                            ->relationship('distributor', 'name')
-                            ->native(false)
-                            ->preload()
-                            ->searchable()
-                            ->required(),
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255),

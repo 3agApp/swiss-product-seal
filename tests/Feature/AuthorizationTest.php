@@ -201,7 +201,7 @@ describe('ProductSafetyEntryPolicy', function () {
 
 describe('CategoryPolicy', function () {
     it('allows system admins to manage categories', function () {
-        $category = Category::factory()->create(['distributor_id' => $this->distributor->id]);
+        $category = Category::factory()->create();
 
         expect($this->systemAdmin->can('viewAny', Category::class))->toBeTrue()
             ->and($this->systemAdmin->can('create', Category::class))->toBeTrue()
@@ -209,7 +209,7 @@ describe('CategoryPolicy', function () {
     });
 
     it('prevents non system admins from managing categories', function () {
-        $category = Category::factory()->create(['distributor_id' => $this->distributor->id]);
+        $category = Category::factory()->create();
 
         expect($this->owner->can('viewAny', Category::class))->toBeFalse()
             ->and($this->admin->can('create', Category::class))->toBeFalse();
@@ -218,9 +218,8 @@ describe('CategoryPolicy', function () {
 
 describe('TemplatePolicy', function () {
     it('allows system admins to manage templates', function () {
-        $category = Category::factory()->create(['distributor_id' => $this->distributor->id]);
+        $category = Category::factory()->create();
         $template = Template::factory()->create([
-            'distributor_id' => $this->distributor->id,
             'category_id' => $category->id,
         ]);
 
@@ -230,9 +229,8 @@ describe('TemplatePolicy', function () {
     });
 
     it('prevents non system admins from managing templates', function () {
-        $category = Category::factory()->create(['distributor_id' => $this->distributor->id]);
+        $category = Category::factory()->create();
         $template = Template::factory()->create([
-            'distributor_id' => $this->distributor->id,
             'category_id' => $category->id,
         ]);
 

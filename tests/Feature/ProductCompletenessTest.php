@@ -33,14 +33,11 @@ beforeEach(function () {
         'supplier_id' => $this->supplier->id,
     ]);
 
-    $this->category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $this->category = Category::factory()->create();
 });
 
 test('product completeness reflects required documents and safety fields', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value, DocumentType::DeclarationOfConformity->value],
         'required_data_fields' => ['safety_text', 'warning_text'],
@@ -81,7 +78,6 @@ test('product completeness reflects required documents and safety fields', funct
 
 test('product completeness score stays in sync when documents and safety entries change', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => ['safety_text'],
@@ -126,7 +122,6 @@ test('product completeness score stays in sync when documents and safety entries
 
 test('updating template requirements refreshes related product completeness', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [],
         'required_data_fields' => [],
@@ -159,7 +154,6 @@ test('template updates only queue completeness recalculation when requirements c
     Queue::fake();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [],
         'required_data_fields' => [],
@@ -180,7 +174,6 @@ test('template updates only queue completeness recalculation when requirements c
 
 test('products can only be submitted for review when fully complete', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -213,7 +206,6 @@ test('products can only be submitted for review when fully complete', function (
 
 test('seal status is computed from approval and completeness without an override field', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -247,7 +239,6 @@ test('seal status is computed from approval and completeness without an override
 
 test('documents relation manager flags missing required document types', function () {
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
         'required_document_types' => [DocumentType::Manual->value, DocumentType::DeclarationOfConformity->value],
         'required_data_fields' => [],

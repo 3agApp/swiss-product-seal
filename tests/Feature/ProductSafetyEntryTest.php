@@ -84,11 +84,8 @@ test('product resource registers the safety information relation manager', funct
 
 test('product safety entries report missing template-required fields', function () {
     $distributor = Distributor::factory()->create();
-    $category = Category::factory()->create([
-        'distributor_id' => $distributor->id,
-    ]);
+    $category = Category::factory()->create();
     $template = Template::factory()->create([
-        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => ['safety_text', 'warning_text', 'age_grading'],
     ]);
@@ -116,11 +113,8 @@ test('product safety entries report missing template-required fields', function 
 
 test('product safety entries report when the template has no required safety fields', function () {
     $distributor = Distributor::factory()->create();
-    $category = Category::factory()->create([
-        'distributor_id' => $distributor->id,
-    ]);
+    $category = Category::factory()->create();
     $template = Template::factory()->create([
-        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => [],
     ]);
@@ -144,11 +138,8 @@ test('product safety entries report when the template has no required safety fie
 
 test('product safety entry form helper text marks template-required fields without making others required', function () {
     $distributor = Distributor::factory()->create();
-    $category = Category::factory()->create([
-        'distributor_id' => $distributor->id,
-    ]);
+    $category = Category::factory()->create();
     $template = Template::factory()->create([
-        'distributor_id' => $distributor->id,
         'category_id' => $category->id,
         'required_data_fields' => ['warning_text', 'safety_instructions'],
     ]);

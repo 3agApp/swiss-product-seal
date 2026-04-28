@@ -124,13 +124,12 @@ class ProductResource extends Resource
         }
 
         $exists = Category::query()
-            ->whereBelongsTo($tenant)
             ->whereKey($categoryId)
             ->exists();
 
         if (! $exists) {
             throw ValidationException::withMessages([
-                'category_id' => 'Select a valid category for this distributor.',
+                'category_id' => 'Select a valid category.',
             ]);
         }
     }
@@ -142,7 +141,6 @@ class ProductResource extends Resource
         }
 
         $exists = Template::query()
-            ->whereBelongsTo($tenant)
             ->whereKey($templateId)
             ->where('category_id', $categoryId)
             ->exists();

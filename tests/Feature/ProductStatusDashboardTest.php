@@ -70,12 +70,9 @@ it('does not show a selected category summary on the edit product page', functio
 });
 
 it('shows the completeness score on the edit product page', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => ['safety_text'],
@@ -120,12 +117,9 @@ it('ignores dashboard attempts to change product status when editing', function 
 });
 
 it('submits a completed product for review from the edit page header action', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -155,12 +149,9 @@ it('submits a completed product for review from the edit page header action', fu
 });
 
 it('hides the submit for review action on the edit page for incomplete products', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -180,12 +171,9 @@ it('hides the submit for review action on the edit page for incomplete products'
 });
 
 it('submits completed products for review from the table action', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -230,12 +218,9 @@ it('hides secondary product table columns by default', function () {
 });
 
 it('submits only eligible products from the bulk review action', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],
@@ -274,12 +259,9 @@ it('submits only eligible products from the bulk review action', function () {
 });
 
 it('filters the products table with product tabs', function () {
-    $category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $category = Category::factory()->create();
 
     $template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $category->id,
         'required_document_types' => [DocumentType::Manual->value],
         'required_data_fields' => [],

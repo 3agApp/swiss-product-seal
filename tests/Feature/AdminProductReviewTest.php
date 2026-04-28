@@ -37,12 +37,9 @@ beforeEach(function () {
         'supplier_id' => $this->supplier->id,
     ]);
 
-    $this->category = Category::factory()->create([
-        'distributor_id' => $this->distributor->id,
-    ]);
+    $this->category = Category::factory()->create();
 
     $this->template = Template::factory()->create([
-        'distributor_id' => $this->distributor->id,
         'category_id' => $this->category->id,
     ]);
 

@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Category;
-use App\Models\Distributor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +16,6 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'distributor_id' => Distributor::factory(),
             'name' => fake()->words(2, true),
             'description' => fake()->optional()->sentence(),
         ];

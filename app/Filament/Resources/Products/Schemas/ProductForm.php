@@ -285,14 +285,11 @@ class ProductForm
      */
     private static function getTemplateOptions(mixed $categoryId): array
     {
-        $tenant = static::getTenant();
-
-        if (! $tenant instanceof Distributor || blank($categoryId)) {
+        if (blank($categoryId)) {
             return [];
         }
 
         return Template::query()
-            ->whereBelongsTo($tenant)
             ->where('category_id', $categoryId)
             ->orderBy('name')
             ->get()
@@ -345,14 +342,11 @@ class ProductForm
 
     private static function getTemplateRequirementsSummary(mixed $templateId): string
     {
-        $tenant = static::getTenant();
-
-        if (! $tenant instanceof Distributor || blank($templateId)) {
+        if (blank($templateId)) {
             return 'Choose a template to preview its required documents and data fields.';
         }
 
         $template = Template::query()
-            ->whereBelongsTo($tenant)
             ->find($templateId);
 
         if (! $template instanceof Template) {
@@ -495,14 +489,7 @@ class ProductForm
      */
     private static function getCategories(): Collection
     {
-        $tenant = static::getTenant();
-
-        if (! $tenant instanceof Distributor) {
-            return collect();
-        }
-
         return Category::query()
-            ->whereBelongsTo($tenant)
             ->withCount('templates')
             ->orderBy('name')
             ->get();
