@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use App\Enums\DocumentType;
 use App\Enums\ProductStatus;
+use App\Filament\Resources\Suppliers\Resources\Brands\Schemas\BrandForm;
+use App\Filament\Resources\Suppliers\Schemas\SupplierForm;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Distributor;
@@ -11,6 +13,7 @@ use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Template;
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
@@ -23,6 +26,8 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\Rules\Unique;
+use Livewire\Component as Livewire;
 
 class ProductForm
 {
@@ -117,6 +122,16 @@ class ProductForm
                 ->native(false)
                 ->preload()
                 ->searchable()
+                ->createOptionForm([
+                    Section::make('Supplier information')
+                        ->columnSpanFull()
+                        ->columns(2)
+                        ->schema(SupplierForm::getFields(ignoreRecord: false)),
+                ])
+                ->createOptionUsing(fn (array $data): int => static::createSupplierOption($data))
+                ->createOptionAction(fn (Action $action): Action => $action
+                    ->visible(static::canCreateSupplierOptions())
+                    ->modalWidth('3xl'))
                 ->live()
                 ->afterStateUpdated(function (Set $set): void {
                     $set('brand_id', null);
@@ -128,6 +143,23 @@ class ProductForm
                 ->native(false)
                 ->preload()
                 ->searchable()
+                ->createOptionForm([
+                    Section::make('Brand information')
+                        ->columnSpanFull()
+                        ->columns(2)
+                        ->schema(BrandForm::getFields(
+                            fn (TextInput $field): TextInput => $field->unique(
+                                table: Brand::class,
+                                column: 'name',
+                                ignoreRecord: false,
+                                modifyRuleUsing: fn (Unique $rule, Livewire $livewire): Unique => $rule->where('supplier_id', data_get($livewire, 'data.supplier_id')),
+                            ),
+                        )),
+                ])
+                ->createOptionUsing(fn (array $data, Get $get): int => static::createBrandOption($data, $get('supplier_id')))
+                ->createOptionAction(fn (Action $action): Action => $action
+                    ->visible(static::canCreateBrandOptions())
+                    ->modalWidth('2xl'))
                 ->disabled(fn (Get $get): bool => blank($get('supplier_id'))),
             TextInput::make('internal_article_number')
                 ->label('Internal article number')
@@ -235,6 +267,16 @@ class ProductForm
                     ->native(false)
                     ->preload()
                     ->searchable()
+                    ->createOptionForm([
+                        Section::make('Supplier information')
+                            ->columnSpanFull()
+                            ->columns(2)
+                            ->schema(SupplierForm::getFields(ignoreRecord: false)),
+                    ])
+                    ->createOptionUsing(fn (array $data): int => static::createSupplierOption($data))
+                    ->createOptionAction(fn (Action $action): Action => $action
+                        ->visible(static::canCreateSupplierOptions())
+                        ->modalWidth('3xl'))
                     ->live()
                     ->afterStateUpdated(function (Set $set): void {
                         $set('brand_id', null);
@@ -246,6 +288,23 @@ class ProductForm
                     ->native(false)
                     ->preload()
                     ->searchable()
+                    ->createOptionForm([
+                        Section::make('Brand information')
+                            ->columnSpanFull()
+                            ->columns(2)
+                            ->schema(BrandForm::getFields(
+                                fn (TextInput $field): TextInput => $field->unique(
+                                    table: Brand::class,
+                                    column: 'name',
+                                    ignoreRecord: false,
+                                    modifyRuleUsing: fn (Unique $rule, Livewire $livewire): Unique => $rule->where('supplier_id', data_get($livewire, 'data.supplier_id')),
+                                ),
+                            )),
+                    ])
+                    ->createOptionUsing(fn (array $data, Get $get): int => static::createBrandOption($data, $get('supplier_id')))
+                    ->createOptionAction(fn (Action $action): Action => $action
+                        ->visible(static::canCreateBrandOptions())
+                        ->modalWidth('2xl'))
                     ->disabled(fn (Get $get): bool => blank($get('supplier_id'))),
             ]);
     }
@@ -338,6 +397,73 @@ class ProductForm
             ->orderBy('name')
             ->pluck('name', 'id')
             ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function createSupplierOption(array $data): int
+    {
+        $tenant = static::getTenant();
+
+        abort_unless($tenant instanceof Distributor, 403);
+        abort_unless(static::canCreateSupplierOptions(), 403);
+
+        return Supplier::query()
+            ->create([
+                ...$data,
+                'distributor_id' => $tenant->getKey(),
+            ])
+            ->getKey();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function createBrandOption(array $data, mixed $supplierId): int
+    {
+        $tenant = static::getTenant();
+
+        abort_unless($tenant instanceof Distributor, 403);
+        abort_unless(static::canCreateBrandOptions(), 403);
+
+        static::ensureSupplierExistsForBrandCreation($tenant, $supplierId);
+
+        return Brand::query()
+            ->create([
+                ...$data,
+                'distributor_id' => $tenant->getKey(),
+                'supplier_id' => $supplierId,
+            ])
+            ->getKey();
+    }
+
+    private static function canCreateSupplierOptions(): bool
+    {
+        $user = Filament::auth()->user();
+
+        return $user?->can('create', Supplier::class) ?? false;
+    }
+
+    private static function canCreateBrandOptions(): bool
+    {
+        $user = Filament::auth()->user();
+
+        return $user?->can('create', Brand::class) ?? false;
+    }
+
+    private static function ensureSupplierExistsForBrandCreation(Distributor $tenant, mixed $supplierId): void
+    {
+        if (! filled($supplierId)) {
+            abort(403);
+        }
+
+        $exists = Supplier::query()
+            ->whereBelongsTo($tenant)
+            ->whereKey($supplierId)
+            ->exists();
+
+        abort_unless($exists, 403);
     }
 
     private static function getTemplateRequirementsSummary(mixed $templateId): string

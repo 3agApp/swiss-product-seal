@@ -23,6 +23,49 @@ class SafetyEntriesRelationManager extends RelationManager
 
     protected static ?string $title = 'Safety information';
 
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        $missingFieldCount = static::getMissingRequiredFieldCount($ownerRecord);
+
+        if ($missingFieldCount === 0) {
+            return null;
+        }
+
+        return (string) $missingFieldCount;
+    }
+
+    public static function getBadgeColor(Model $ownerRecord, string $pageClass): ?string
+    {
+        if (! $ownerRecord instanceof Product) {
+            return null;
+        }
+
+        return static::getMissingRequiredFieldCount($ownerRecord) > 0 ? 'danger' : 'success';
+    }
+
+    public static function getBadgeTooltip(Model $ownerRecord, string $pageClass): ?string
+    {
+        if (! $ownerRecord instanceof Product) {
+            return null;
+        }
+
+        $safetyEntry = $ownerRecord->safetyEntries()->first();
+
+        if ($safetyEntry instanceof ProductSafetyEntry) {
+            return static::getMissingRequiredFieldCount($ownerRecord) > 0
+                ? 'Missing required safety fields: '.$safetyEntry->missingRequiredTemplateFieldsSummary().'.'
+                : 'All required safety fields are filled.';
+        }
+
+        $requiredFieldLabels = static::getRequiredFieldLabels($ownerRecord);
+
+        if (! filled($requiredFieldLabels)) {
+            return 'The assigned template does not require any safety fields.';
+        }
+
+        return 'Add safety information for: '.implode(', ', $requiredFieldLabels).'.';
+    }
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return $ownerRecord instanceof Product;
@@ -117,5 +160,34 @@ class SafetyEntriesRelationManager extends RelationManager
             ->emptyStateHeading('No safety information added')
             ->emptyStateDescription('Create the safety entry for this product.')
             ->paginated(false);
+    }
+
+    private static function getMissingRequiredFieldCount(Model $ownerRecord): int
+    {
+        if (! $ownerRecord instanceof Product) {
+            return 0;
+        }
+
+        $safetyEntry = $ownerRecord->safetyEntries()->first();
+
+        if ($safetyEntry instanceof ProductSafetyEntry) {
+            return count($safetyEntry->missingRequiredTemplateFields());
+        }
+
+        return count(static::getRequiredFieldLabels($ownerRecord));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function getRequiredFieldLabels(Product $ownerRecord): array
+    {
+        $labels = ProductSafetyEntry::dataFieldLabels();
+
+        return collect($ownerRecord->template?->required_data_fields ?? [])
+            ->filter(fn (string $field): bool => array_key_exists($field, $labels))
+            ->map(fn (string $field): string => $labels[$field])
+            ->values()
+            ->all();
     }
 }

@@ -82,6 +82,31 @@ test('product resource registers the safety information relation manager', funct
         ->and(SafetyEntriesRelationManager::canViewForRecord($product, EditProduct::class))->toBeTrue();
 });
 
+test('safety information relation manager exposes missing-work badges and tooltips', function () {
+    $distributor = Distributor::factory()->create();
+    $category = Category::factory()->create();
+    $template = Template::factory()->create([
+        'category_id' => $category->id,
+        'required_data_fields' => ['safety_text', 'warning_text'],
+    ]);
+    $product = Product::factory()->create([
+        'distributor_id' => $distributor->id,
+        'category_id' => $category->id,
+        'template_id' => $template->id,
+    ]);
+
+    ProductSafetyEntry::factory()->create([
+        'distributor_id' => $distributor->id,
+        'product_id' => $product->id,
+        'safety_text' => 'Keep away from heat sources.',
+        'warning_text' => null,
+    ]);
+
+    expect(SafetyEntriesRelationManager::getBadge($product, EditProduct::class))->toBe('1')
+        ->and(SafetyEntriesRelationManager::getBadgeColor($product, EditProduct::class))->toBe('danger')
+        ->and(SafetyEntriesRelationManager::getBadgeTooltip($product, EditProduct::class))->toBe('Missing required safety fields: Warning text.');
+});
+
 test('product safety entries report missing template-required fields', function () {
     $distributor = Distributor::factory()->create();
     $category = Category::factory()->create();

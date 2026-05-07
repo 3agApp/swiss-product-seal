@@ -259,8 +259,8 @@ test('documents relation manager flags missing required document types', functio
     ]);
 
     expect(DocumentsRelationManager::getTitle($product, EditProduct::class))->toBe('Documents')
-        ->and(DocumentsRelationManager::getBadge($product, EditProduct::class))->toBeNull()
+        ->and(DocumentsRelationManager::getBadge($product, EditProduct::class))->toBe('1')
         ->and(DocumentsRelationManager::getBadgeColor($product, EditProduct::class))->toBe('danger')
-        ->and(DocumentsRelationManager::getBadgeTooltip($product, EditProduct::class))->toBeNull()
+        ->and(DocumentsRelationManager::getBadgeTooltip($product, EditProduct::class))->toBe('Missing required document types: Declaration of conformity.')
         ->and(DocumentsRelationManager::getMissingRequiredDocumentTypesMessage($product))->toBe('Missing required document types: Declaration of conformity.');
 });

@@ -14,6 +14,16 @@ class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
 
+    public function hasCombinedRelationManagerTabsWithContent(): bool
+    {
+        return true;
+    }
+
+    public function getContentTabLabel(): ?string
+    {
+        return 'Basics';
+    }
+
     /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>

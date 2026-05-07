@@ -21,7 +21,17 @@ class DocumentsRelationManager extends RelationManager
 
     public static function getBadge(Model $ownerRecord, string $pageClass): ?string
     {
-        return null;
+        if (! $ownerRecord instanceof Product) {
+            return null;
+        }
+
+        $missingDocumentTypes = $ownerRecord->missingRequiredDocumentTypes();
+
+        if (! filled($missingDocumentTypes)) {
+            return null;
+        }
+
+        return (string) count($missingDocumentTypes);
     }
 
     public static function getBadgeColor(Model $ownerRecord, string $pageClass): ?string
@@ -30,7 +40,7 @@ class DocumentsRelationManager extends RelationManager
             return null;
         }
 
-        return count($ownerRecord->missingRequiredDocumentTypes()) > 0 ? 'danger' : null;
+        return count($ownerRecord->missingRequiredDocumentTypes()) > 0 ? 'danger' : 'success';
     }
 
     public static function getMissingRequiredDocumentTypesMessage(Model $ownerRecord): ?string
@@ -50,7 +60,12 @@ class DocumentsRelationManager extends RelationManager
 
     public static function getBadgeTooltip(Model $ownerRecord, string $pageClass): ?string
     {
-        return null;
+        if (! $ownerRecord instanceof Product) {
+            return null;
+        }
+
+        return static::getMissingRequiredDocumentTypesMessage($ownerRecord)
+            ?? 'All required document types are present.';
     }
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool

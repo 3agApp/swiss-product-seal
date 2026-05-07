@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -67,4 +68,17 @@ it('updates a distributor member to a supplier-scoped role from the members tabl
 
     expect($this->member->fresh()->getRoleForDistributor($this->distributor))->toBe(Role::Supplier)
         ->and($this->member->fresh()->getSupplierIdForDistributor($this->distributor))->toBe($this->supplier->id);
+});
+
+it('has tenant-scoped unique indexes for supplier code and name', function () {
+    $indexes = collect(Schema::getIndexes('suppliers'));
+
+    expect($indexes->contains(function (array $index): bool {
+        return $index['unique']
+            && $index['columns'] === ['distributor_id', 'supplier_code'];
+    }))->toBeTrue()
+        ->and($indexes->contains(function (array $index): bool {
+            return $index['unique']
+                && $index['columns'] === ['distributor_id', 'name'];
+        }))->toBeTrue();
 });

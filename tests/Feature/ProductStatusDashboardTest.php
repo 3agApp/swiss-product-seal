@@ -58,6 +58,16 @@ it('does not expose a status field on the edit product page', function () {
         ->assertFormFieldDoesNotExist('status');
 });
 
+it('combines the edit form and compliance sections into tabs', function () {
+    $page = Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->assertSee('Basics')
+        ->assertSee('Documents')
+        ->assertSee('Safety information');
+
+    expect($page->instance()->hasCombinedRelationManagerTabsWithContent())->toBeTrue()
+        ->and($page->instance()->getContentTabLabel())->toBe('Basics');
+});
+
 it('shows the current status on the edit product page', function () {
     Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
         ->assertSee('Current status')
@@ -103,6 +113,100 @@ it('shows the completeness score on the edit product page', function () {
         ->assertSee('50% complete')
         ->assertSee('1 of 2 required items are present.', false)
         ->assertSee('Missing required safety fields: Safety text.');
+});
+
+it('allows creating a supplier inline from the product edit form', function () {
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->assertFormComponentActionVisible('supplier_id', 'createOption')
+        ->callFormComponentAction('supplier_id', 'createOption', data: [
+            'supplier_code' => 'SUP-NEW-001',
+            'name' => 'New inline supplier',
+            'email' => 'inline-supplier@example.com',
+            'phone' => '+1-555-0100',
+            'country' => 'Germany',
+            'address' => 'Example Street 1',
+            'active' => true,
+        ])
+        ->assertHasNoFormComponentActionErrors();
+
+    $supplier = Supplier::query()
+        ->where('distributor_id', $this->distributor->id)
+        ->where('name', 'New inline supplier')
+        ->first();
+
+    expect($supplier)->not->toBeNull();
+
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->callFormComponentAction('supplier_id', 'createOption', data: [
+            'supplier_code' => 'SUP-NEW-002',
+            'name' => 'Newest inline supplier',
+            'email' => 'newest-inline-supplier@example.com',
+            'phone' => '+1-555-0101',
+            'country' => 'Germany',
+            'address' => 'Example Street 2',
+            'active' => true,
+        ])
+        ->assertSet('data.supplier_id', Supplier::query()
+            ->where('distributor_id', $this->distributor->id)
+            ->where('name', 'Newest inline supplier')
+            ->value('id'));
+});
+
+it('rejects duplicate supplier codes in the inline create form', function () {
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->callFormComponentAction('supplier_id', 'createOption', data: [
+            'supplier_code' => $this->supplier->supplier_code,
+            'name' => 'Different supplier name',
+            'email' => 'duplicate-code@example.com',
+            'phone' => '+1-555-0102',
+            'country' => 'Germany',
+            'address' => 'Example Street 3',
+            'active' => true,
+        ])
+        ->assertHasFormComponentActionErrors(['supplier_code' => 'unique']);
+});
+
+it('rejects duplicate supplier names in the inline create form', function () {
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->callFormComponentAction('supplier_id', 'createOption', data: [
+            'supplier_code' => 'SUP-NEW-003',
+            'name' => $this->supplier->name,
+            'email' => 'duplicate-name@example.com',
+            'phone' => '+1-555-0103',
+            'country' => 'Germany',
+            'address' => 'Example Street 4',
+            'active' => true,
+        ])
+        ->assertHasFormComponentActionErrors(['name' => 'unique']);
+});
+
+it('allows creating a brand inline for the selected supplier from the product edit form', function () {
+    $page = Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->set('data.supplier_id', $this->supplier->id)
+        ->assertFormComponentActionVisible('brand_id', 'createOption')
+        ->callFormComponentAction('brand_id', 'createOption', data: [
+            'name' => 'Inline product brand',
+        ])
+        ->assertHasNoFormComponentActionErrors();
+
+    $brand = Brand::query()
+        ->where('distributor_id', $this->distributor->id)
+        ->where('supplier_id', $this->supplier->id)
+        ->where('name', 'Inline product brand')
+        ->first();
+
+    expect($brand)->not->toBeNull();
+
+    $page->assertSet('data.brand_id', $brand->id);
+});
+
+it('rejects duplicate brand names for the selected supplier in the inline create form', function () {
+    Livewire::test(EditProduct::class, ['record' => $this->product->getRouteKey()])
+        ->set('data.supplier_id', $this->supplier->id)
+        ->callFormComponentAction('brand_id', 'createOption', data: [
+            'name' => $this->brand->name,
+        ])
+        ->assertHasFormComponentActionErrors(['name' => 'unique']);
 });
 
 it('ignores dashboard attempts to change product status when editing', function () {
